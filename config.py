@@ -24,7 +24,11 @@ class StagingConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+    SERVER_ADDRESS = '127.0.0.1'
+    SERVER_PORT = 5000
 
 
 class TestingConfig(Config):
     TESTING = True
+    SERVER_ADDRESS = '127.0.0.1'
+    SERVER_PORT = 5000

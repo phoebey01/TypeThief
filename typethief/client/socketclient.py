@@ -28,7 +28,7 @@ class SocketClient(object):
     def __init__(self, address, port, namespace='/play'):
         self._socketio = SocketIO(address, port)
         self._namespace = self._socketio.define(_TTNamespace, namespace)
-        threading.Thread(target=self_socketio.wait, args=()).start()
+        threading.Thread(target=self._socketio.wait, args=()).start()
 
     def new_room(self):
         self._namespace.emit('new_room', {})
