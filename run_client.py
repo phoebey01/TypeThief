@@ -3,7 +3,7 @@
 import argparse
 
 import config
-from typethief.client.gamewindow import GameWindow
+from typethief.client.room import Room
 from typethief.client.socketclient import SocketClient
 
 
@@ -35,8 +35,8 @@ def main():
     args = parse_args()
     conf = ENVS[args.config]
     sc = SocketClient(conf.SERVER_ADDRESS, conf.SERVER_PORT)
-    gw = GameWindow()
-    gw.run()
+    room = Room()
+    room.run()
 
 
 if __name__ == '__main__':

@@ -17,20 +17,36 @@ class GameWindow(object):
     ):
         pygame.init()
 
-        self.size = width, height
-        self.mode = 'PLAYING' # todo: after making menu, switch
+        self._size = width, height
+        self._mode = 'PLAYING' # todo: after making menu, switch
 
-        self.time = pygame.time.Clock()
-        self.fps = fps
+        self._time = pygame.time.Clock()
+        self._fps = fps
 
-        self.screen = pygame.display.set_mode(self.size)
+        self._screen = pygame.display.set_mode(self._size)
 
-    def draw(self):
-        self.screen.fill(GameWindow.BG_COLOR)
+    @property
+    def width(self):
+        return self._size[0]
+
+    @property
+    def height(self):
+        return self._size[1]
+
+    @property
+    def screen(self):
+        return self._screen
+
+    def _draw(self):
+        self._screen.fill(GameWindow.BG_COLOR)
         # todo: draw screen based on mode
         pygame.display.update()
 
     def run(self):
         while True:
-            self.time.tick(self.fps)
-            self.draw()
+            try:
+                self._time.tick(self._fps)
+                self._draw()
+            except KeyboardInterrupt:
+                break
+        exit()
