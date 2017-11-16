@@ -50,7 +50,7 @@ class SocketClient(object):
         self._receive_events_thread.daemon = True
 
     @property
-    def id(self):
+    def player_id(self):
         return self._namespace.id
 
     @property

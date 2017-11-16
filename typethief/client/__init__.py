@@ -7,6 +7,7 @@ import pygame
 from .button import button
 from .gamewindow import GameWindow
 from .textutils import render_lines
+from .textutils import render_text
 from .textutils import wrap_text
 from typethief.shared.room import Room
 from .socketclient import SocketClient
@@ -27,12 +28,44 @@ class Client(SocketClient):
         pygame.quit()
         exit()
 
+    def _draw_text(self, x, y, w, font):
+        text_obj = self.room.text
+        text = text_obj.text
+        claimed = [text_obj.get_char(i) for i in range(text_obj.next_pos)]
+        lines = wrap_text(text, font, w)
+
+        # draw lines before next_line
+        surfrects = []
+        ci, ly = 0, y
+
+        for l in lines:
+            lx = x
+            for c in l:
+                color = 0, 0, 0
+                if ci < len(claimed):
+                    c, val, claimer = claimed[ci]
+                    ci += 1
+                    color = 255, 0, 0
+                surfrects.append(render_text(lx, ly, c, font, color=color))
+                lx += font.size(c)[0]
+            ly += font.size(l)[1]
+
+        for surf, rect in surfrects:
+            self._game_window.screen.blit(surf, rect)
+
     def _choose_room(self, room_id=None):
         if room_id:
             pass
         else:
             self._send_new_room()
         self._mode = 'waiting'
+        # temp
+        while self.room == None:
+            pass
+        player = self.room.get_player(self.player_id)
+        for _ in range(100):
+            self.room.text.claim_next(player)
+        # temp end
 
     def _draw(self):
         button(
@@ -53,10 +86,8 @@ class Client(SocketClient):
             )
         elif self._mode == 'waiting':
             if self.room:
-                font = pygame.font.SysFont('arial', 30)
-                lines = wrap_text(self.room.text.text, font, 600)
-                for surf, rect in render_lines(20, 20, lines, font):
-                    self._game_window.screen.blit(surf, rect)
+                font = pygame.font.SysFont('arial', 20)
+                self._draw_text(20, 20, 600, font)
         elif self._mode == 'playing':
             pass
 

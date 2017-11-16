@@ -20,7 +20,7 @@ def wrap_text(text, font, width=None):
 
         for w in words:
             if wrapped and font.size('{} {}'.format(wrapped, w))[0] <= width:
-                wrapped += ' ' + w
+                wrapped += w
             elif not wrapped:
                 wrapped = w
             else:
