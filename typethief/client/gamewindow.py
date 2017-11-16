@@ -37,16 +37,9 @@ class GameWindow(object):
     def screen(self):
         return self._screen
 
-    def _draw(self):
+    def clear_screen(self):
         self._screen.fill(GameWindow.BG_COLOR)
-        # todo: draw screen based on mode
-        pygame.display.update()
 
-    def run(self):
-        while True:
-            try:
-                self._time.tick(self._fps)
-                self._draw()
-            except KeyboardInterrupt:
-                break
-        exit()
+    def draw(self):
+        self._time.tick(self._fps)
+        pygame.display.update()

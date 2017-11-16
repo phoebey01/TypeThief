@@ -3,16 +3,7 @@
 import argparse
 
 import config
-from typethief.client.room import Room
-from typethief.client.socketclient import SocketClient
-
-
-ENVS = {
-    'dev': config.DevelopmentConfig,
-    'stage': config.StagingConfig,
-    'prod': config.ProductionConfig,
-    'test': config.TestingConfig,
-}
+from typethief.client import Client
 
 
 def parse_args():
@@ -25,7 +16,7 @@ def parse_args():
     )
 
     args = parser.parse_args()
-    if args.config not in ENVS:
+    if args.config not in config.CONFIGS:
         parser.error('"{}" is not a valid configuration'.format(args.config))
 
     return args
@@ -33,10 +24,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    conf = ENVS[args.config]
-    sc = SocketClient(conf.SERVER_ADDRESS, conf.SERVER_PORT)
-    room = Room()
-    room.run()
+    conf = config.CONFIGS[args.config]
+    cli = Client(conf.SERVER_ADDRESS, conf.SERVER_PORT)
+    cli.run()
 
 
 if __name__ == '__main__':

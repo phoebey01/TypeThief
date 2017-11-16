@@ -6,9 +6,19 @@ from socketIO_client import SocketIO
 from socketIO_client import BaseNamespace
 
 
-class _TTNamespace(BaseNamespace):
+class _ClientNamespace(BaseNamespace):
     """
+    Namespace that responds to messages from server
+    Contains room because room needs to change based on serve rmessages
     """
+    def __init__(self, *args, **kwargs):
+        self._room = None # wait for server
+        super().__init__(*args, **kwargs)
+
+    @property
+    def room(self):
+        return self._room
+
     def on_connect(self):
         print('[Connected]')
 
@@ -18,8 +28,7 @@ class _TTNamespace(BaseNamespace):
     def on_disconnect(self):
         print('[Disconnected]')
 
-    def on_new_room(self, data):
-        print('new_room', data)
+    # todo: add responses
 
 
 class SocketClient(object):
@@ -27,10 +36,16 @@ class SocketClient(object):
     """
     def __init__(self, address, port, namespace='/play'):
         self._socketio = SocketIO(address, port)
-        self._namespace = self._socketio.define(_TTNamespace, namespace)
+        self._namespace = self._socketio.define(_ClientNamespace, namespace)
 
-    def wait(self, seconds=None):
-        self._socketio.wait(seconds=seconds)
+        self._receive_events_thread = threading.Thread(target=self._socketio.wait)
+        self._receive_events_thread.daemon = True
 
-    def new_room(self):
-        self._namespace.emit('new_room', {})
+    @property
+    def room(self):
+        return self._namespace.room
+
+    def run(self):
+        self._receive_events_thread.start()
+
+    # todo: add sends

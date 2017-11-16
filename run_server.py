@@ -1,8 +1,8 @@
 # run_server.py
 
-from typethief.server.views import app
-from typethief.server.views import socketio
+from typethief.server import Server
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+    srv = Server()
+    srv.run()

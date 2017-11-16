@@ -1,4 +1,4 @@
-# config.py
+# py
 # https://realpython.com/blog/python/flask-by-example-part-1-project-setup/
 
 import os
@@ -32,3 +32,11 @@ class TestingConfig(Config):
     TESTING = True
     SERVER_ADDRESS = '127.0.0.1'
     SERVER_PORT = 5000
+
+
+CONFIGS = {
+    'dev': DevelopmentConfig,
+    'stage': StagingConfig,
+    'prod': ProductionConfig,
+    'test': TestingConfig,
+}

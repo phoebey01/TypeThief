@@ -1,6 +1,6 @@
 # typethief/shared/player.py
 
-from text import Character
+from .text import Character
 
 
 class Player(object):
@@ -8,7 +8,9 @@ class Player(object):
     Represents a typing player
     Each player has an id, claimed characters, and a score
     """
-    def __init__(self, player_id=None, encoded=None):
+    _next_player = 0
+
+    def __init__(self, encoded=None):
         """
         player_id [int]: player id
         encoded [dict]: encoded player; if provided, overrides other parameters
@@ -20,7 +22,7 @@ class Player(object):
             self.decode(encoded)
             return
         
-        self._player_id = player_id
+        self._player_id = Player._new_player_id()
 
     def encode(self):
         encoded_claimed = [char.encode() for char in self._claimed]
@@ -44,6 +46,12 @@ class Player(object):
     @property
     def id(self):
         return self._player_id
+
+    @classmethod
+    def _new_player_id(cls):
+        player_id = 'player' + str(cls._next_player)
+        cls._next_player += 1
+        return player_id
 
     def add_claimed(self, char):
         self._claimed.append(char)
