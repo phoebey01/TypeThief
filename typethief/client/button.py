@@ -1,6 +1,7 @@
 # typethief/client/button.py
 
 import pygame
+from .textutils import render_text
 
 
 def button(x, y, w, h, text, on_color, off_color, screen, action=None):
@@ -16,7 +17,6 @@ def button(x, y, w, h, text, on_color, off_color, screen, action=None):
         pygame.draw.rect(screen, off_color, dims)
 
     font = pygame.font.SysFont('arial', 18)
-    surf = font.render(text, True, (0, 0, 0))
-    rect = surf.get_rect()
-    rect.center = x + w/2, y + h/2
+    tw, th = font.size(text)
+    surf, rect = render_text(x + (w - tw)/2, y + (h - th)/2, text, font)
     screen.blit(surf, rect)

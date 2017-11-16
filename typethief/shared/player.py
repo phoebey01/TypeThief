@@ -10,7 +10,7 @@ class Player(object):
     """
     _next_player = 0
 
-    def __init__(self, encoded=None):
+    def __init__(self, player_id=None, encoded=None):
         """
         player_id [int]: player id
         encoded [dict]: encoded player; if provided, overrides other parameters
@@ -22,7 +22,7 @@ class Player(object):
             self.decode(encoded)
             return
         
-        self._player_id = Player._new_player_id()
+        self._player_id = player_id if player_id else Player._new_player_id()
 
     def encode(self):
         encoded_claimed = [char.encode() for char in self._claimed]

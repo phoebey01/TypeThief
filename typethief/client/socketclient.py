@@ -61,4 +61,4 @@ class SocketClient(object):
         self._receive_events_thread.start()
 
     def _send_new_room(self):
-        self._socketio.emit('new_room', {})
+        self._namespace.emit('new_room', {})

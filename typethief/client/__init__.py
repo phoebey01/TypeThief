@@ -6,6 +6,8 @@ from queue import PriorityQueue
 import pygame
 from .button import button
 from .gamewindow import GameWindow
+from .textutils import render_lines
+from .textutils import wrap_text
 from typethief.shared.room import Room
 from .socketclient import SocketClient
 
@@ -29,18 +31,19 @@ class Client(SocketClient):
         if room_id:
             pass
         else:
-            self._send_new_room
+            self._send_new_room()
         self._mode = 'waiting'
 
     def _draw(self):
+        button(
+            680, 410, 260, 50,
+            'Quit',
+            (255, 0, 0), (220, 20, 60),
+            self._game_window.screen,
+            self._quit
+        )
+        
         if self._mode == 'menu':
-            button(
-                680, 410, 260, 50,
-                'Quit',
-                (255, 0, 0), (220, 20, 60),
-                self._game_window.screen,
-                self._quit
-            )
             button(
                 680, 350, 260, 50,
                 'New Room',
@@ -49,7 +52,11 @@ class Client(SocketClient):
                 self._choose_room,
             )
         elif self._mode == 'waiting':
-            pass
+            if self.room:
+                font = pygame.font.SysFont('arial', 30)
+                lines = wrap_text(self.room.text.text, font, 600)
+                for surf, rect in render_lines(20, 20, lines, font):
+                    self._game_window.screen.blit(surf, rect)
         elif self._mode == 'playing':
             pass
 
