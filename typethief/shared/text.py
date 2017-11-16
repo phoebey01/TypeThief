@@ -83,6 +83,8 @@ class Text(object):
     Represents a TypeThief text
     Each text has set of scored characters, and the next available character
     """
+    _cached_texts = None
+
     def __init__(self, text=None, encoded=None):
         """
         text [str]: base string that the text represents, will be generated if none provided
@@ -93,7 +95,7 @@ class Text(object):
             return
 
         if not text:
-            text_id, text = get_random_text()
+            text_id, text = Text._get_random_text()
         self._text = text
         self._characters = self._make_characters(text)
         self._next = 0
@@ -122,6 +124,38 @@ class Text(object):
     @property
     def next_char(self):
         return self._next_char().c
+
+    @property
+    def next_pos(self):
+        return self._next
+
+    def get_char(self, i):
+        """
+        Returns char of the form:
+        (character, value, claimer)
+        """
+        char = self._characters[i]
+        return char.c, char.val, char.claimer
+
+    @classmethod
+    def _get_random_text(cls):
+        """
+        Lazily loads texts to cls._cached_texts
+        Texts are scraped from TypeRacer
+        """
+        if not cls._cached_texts:
+            r = requests.get(_TYPERACER_TEXTS_URL)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            cls._cached_texts = []
+            rows = soup.select('table.stats tr')
+            for i in range(1, len(rows)):
+                cells = rows[i].find_all('td')
+                text_id = int(re.sub(r'#(\d+)', r'\1', cells[1].get_text()))
+                text = cells[2].a.get_text()
+                cls._cached_texts.append((text_id, text))
+
+        i = random.randrange(0, len(cls._cached_texts))
+        return cls._cached_texts[i]
 
     @staticmethod
     def _make_characters(text):

@@ -15,7 +15,10 @@ def wrap_text(text, font, width=None):
     wrapped_lines = []
     for l in lines:
         wrapped = ''
-        for w in [w for w in l.split(' ') if w != '']:
+        words = [w + ' ' for w in l.split(' ')]
+        words[-1].rstrip() # todo: deal with empty case
+
+        for w in words:
             if wrapped and font.size('{} {}'.format(wrapped, w))[0] <= width:
                 wrapped += ' ' + w
             elif not wrapped:
