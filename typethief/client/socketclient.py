@@ -4,16 +4,22 @@ import threading
 
 from socketIO_client import SocketIO
 from socketIO_client import BaseNamespace
+from typethief.shared.room import Room
 
 
 class _ClientNamespace(BaseNamespace):
     """
     Namespace that responds to messages from server
-    Contains room because room needs to change based on serve rmessages
+    Contains room because room needs to change based on server messages
     """
     def __init__(self, *args, **kwargs):
-        self._room = None # wait for server
+        self._player_id = None
+        self._room = None
         super().__init__(*args, **kwargs)
+
+    @property
+    def id(self):
+        return self._player_id
 
     @property
     def room(self):
@@ -28,7 +34,9 @@ class _ClientNamespace(BaseNamespace):
     def on_disconnect(self):
         print('[Disconnected]')
 
-    # todo: add responses
+    def on_new_room_response(self, response):
+        self._player_id = response['player_id']
+        self._room = Room(encoded=response['room'])
 
 
 class SocketClient(object):
@@ -42,10 +50,15 @@ class SocketClient(object):
         self._receive_events_thread.daemon = True
 
     @property
+    def id(self):
+        return self._namespace.id
+
+    @property
     def room(self):
         return self._namespace.room
 
     def run(self):
         self._receive_events_thread.start()
 
-    # todo: add sends
+    def _send_new_room(self):
+        self._socketio.emit('new_room', {})

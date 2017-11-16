@@ -4,6 +4,8 @@ import threading
 
 from flask import Flask
 from flask_socketio import SocketIO
+from .roomcontrol import RoomControl
+from typethief.shared.player import Player
 
 
 class Server(object):
@@ -23,8 +25,19 @@ class Server(object):
         )
         self._server_socket_thread.daemon = True
 
+    def _make_views(self):
+        @self._socketio.on('new_room')
+        def handle_new_room(message):
+            # message = {}
+            new_room = RoomControl()
+            new_player = Player()
+            new_room.add_player(new_player)
+            response = {'player_id': new_player.id, 'room': new_room.encode()}
+            self._rooms[new_room.id] = new_room
+            emit('new_room_response', response)
+
     def run(self):
-        # todo: create routes
+        self._make_views()
         self._server_socket_thread.start()
         while True:
             # todo: process events

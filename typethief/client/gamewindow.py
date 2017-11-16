@@ -7,7 +7,6 @@ class GameWindow(object):
     """
     """
     BG_COLOR = 255, 255, 255
-    MODES = ['MENU', 'WAITING', 'PLAYING']
 
     def __init__(
         self,
@@ -18,11 +17,8 @@ class GameWindow(object):
         pygame.init()
 
         self._size = width, height
-        self._mode = 'PLAYING' # todo: after making menu, switch
-
         self._time = pygame.time.Clock()
         self._fps = fps
-
         self._screen = pygame.display.set_mode(self._size)
 
     @property
@@ -32,6 +28,10 @@ class GameWindow(object):
     @property
     def height(self):
         return self._size[1]
+
+    @property
+    def size(self):
+        return self._size
 
     @property
     def screen(self):
