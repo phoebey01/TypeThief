@@ -6,7 +6,7 @@ from queue import PriorityQueue
 import pygame
 from .button import button
 from .gamewindow import GameWindow
-from .textutils import render_lines
+from .textutils import to_char
 from .textutils import render_text
 from .textutils import wrap_text
 from typethief.shared.room import Room
@@ -21,7 +21,7 @@ class Client(SocketClient):
     def __init__(self, server_address, server_port):
         super().__init__(server_address, server_port)
         self._game_window = GameWindow()
-        self._mode = 'menu'
+        self._state = 'menu' # menu, waiting, playing
 
     def _quit(self):
         pygame.display.quit()
@@ -58,14 +58,7 @@ class Client(SocketClient):
             pass
         else:
             self._send_new_room()
-        self._mode = 'waiting'
-        # temp
-        while self.room == None:
-            pass
-        player = self.room.get_player(self.player_id)
-        for _ in range(100):
-            self.room.text.claim_next(player)
-        # temp end
+        self._state = 'waiting'
 
     def _draw(self):
         button(
@@ -76,7 +69,7 @@ class Client(SocketClient):
             self._quit
         )
         
-        if self._mode == 'menu':
+        if self._state == 'menu':
             button(
                 680, 350, 260, 50,
                 'New Room',
@@ -84,20 +77,28 @@ class Client(SocketClient):
                 self._game_window.screen,
                 self._choose_room,
             )
-        elif self._mode == 'waiting':
+        elif self._state == 'waiting':
             if self.room:
                 font = pygame.font.SysFont('arial', 20)
                 self._draw_text(20, 20, 600, font)
-        elif self._mode == 'playing':
+        elif self._state == 'playing':
             pass
 
     def run(self):
         super().run() # updates room
-        while True:
+        running = True
+        while running:
             try:
                 self._game_window.clear_screen()
-                for event in pygame.event.get([pygame.QUIT]):
-                    self._quit()
+
+                mods = pygame.key.get_mods()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    elif self.event.type == pygame.KEYDOWN:
+                        k = to_char(event.key, shifted=bool(mods & pygame.KMOD_SHIFT))
+                        self._send_input(k)
+
                 self._draw() # temp
 
                 # todo:
@@ -107,5 +108,5 @@ class Client(SocketClient):
 
                 self._game_window.draw()
             except KeyboardInterrupt:
-                break
+                running = False
         self._quit()

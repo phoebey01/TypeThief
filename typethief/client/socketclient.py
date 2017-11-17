@@ -38,6 +38,12 @@ class _ClientNamespace(BaseNamespace):
         self._player_id = response['player_id']
         self._room = Room(encoded=response['room'])
 
+    def on_claim(self, response):
+        # response: {'player_id':, pos':,}
+        player_id, pos = response['player_id'], response['pos']
+        if pos == self._room.text.next_pos:
+            self._room.text.claim_next(self._room.get_player(player_id))
+
 
 class SocketClient(object):
     """
@@ -60,5 +66,20 @@ class SocketClient(object):
     def run(self):
         self._receive_events_thread.start()
 
+    def _message_prototype(self):
+        return {
+            'player_id': self._namespace.id,
+            'room_id': self._namespace.room.id,
+            'timestamp': self._namespace.room.time,
+        }
+
     def _send_new_room(self):
         self._namespace.emit('new_room', {})
+
+    def _send_input(self, key):
+        if not self.room:
+            return
+        message = self._message_prototype()
+        message['key'] = key
+        self._namespace.emit('input', message)
+

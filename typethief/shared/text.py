@@ -3,6 +3,7 @@
 import random
 import re
 import requests
+import threading
 
 from bs4 import BeautifulSoup
 
@@ -90,6 +91,8 @@ class Text(object):
         text [str]: base string that the text represents, will be generated if none provided
         encoded [dict]: encoded text; will override others if provided
         """
+        self._claim_mutex = threading.Lock()
+
         if encoded:
             self.decode(encoded)
             return
@@ -165,8 +168,24 @@ class Text(object):
             characters.append(char)
         return characters
 
-    def claim_next(self, player):
-        char = self._next_char()
-        player.add_claimed(char)
-        char.claimer = player.id
-        self._next += 1
+    def _claim_pos(self, player, pos):
+        pos_char = self._characters[pos] # can raise index
+        if not pos_char.claimer:
+            player.add_claimed(pos_char)
+            pos_char.claimer = player.id
+
+    def claim_pos(self, player, pos):
+        with self._claim_mutex:
+            self._claim_pos(player, pos)
+
+    def claim_next(self, player, char=None):
+        """
+        Returns index of claimed character if successful, None otherwise
+        """
+        with self._claim_mutex:
+            if not char or (self._next_char() and char == self._next_char().c):
+                self._claim_pos(player, self._next)
+                claimed = self._next
+                self._next += 1
+                return claimed
+        return None

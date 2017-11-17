@@ -2,6 +2,7 @@
 
 import threading
 
+from flask import copy_current_request_context
 from flask import Flask
 from flask import request
 from flask_socketio import emit
@@ -15,7 +16,7 @@ from typethief.shared.player import Player
 
 class _ServerNamespace(Namespace):
     def __init__(self, *args, **kwargs):
-        self._rooms = {}
+        self._rooms = {} # room_id: room
         super().__init__(*args, **kwargs)
 
     def on_connect(self):
@@ -29,11 +30,38 @@ class _ServerNamespace(Namespace):
         # message = {}
         new_room = RoomControl()
         new_player = Player(player_id=request.sid)
+
         new_room.add_player(new_player)
-        response = {'player_id': new_player.id, 'room': new_room.encode()}
         self._rooms[new_room.id] = new_room
+
+        @copy_current_request_context
+        def handle_events(room):
+            while room.id in self._rooms:
+                for player_id, (event_type, event_body) in room.execute():
+                    response = {'player_id': player_id}
+
+                    if event_type == 'claim':
+                        response['pos'] = event_body['pos']
+
+                    emit(event_type, response, room=room.id, namespace=self.namespace)
+
+        t = threading.Thread(target=handle_events, args=(new_room,))
+        t.daemon = True
+        t.start()
+
+        response = {'player_id': new_player.id, 'room': new_room.encode()}
         join_room(new_room.id)
+        join_room(new_player.id) # allow messaging to speific client
         emit('new_room_response', response)
+
+    def on_input(self, message):
+        # message = {'player_id':, 'room_id':, 'timestamp':, 'key':,}
+        self._rooms[message['room_id']].add_event(
+            message['player_id'],
+            message['timestamp'],
+            'input',
+            {'key': message['key']},
+        )
 
 
 class Server(object):
@@ -54,7 +82,8 @@ class Server(object):
         self._server_socket_thread.daemon = True
 
     def run(self):
-        self._server_socket_thread.start()
-        while True:
-            # todo: process events
-            pass
+        self._socketio.run(self._app)
+        # self._server_socket_thread.start()
+        # while True:
+        #     # todo: process events
+        #     pass
