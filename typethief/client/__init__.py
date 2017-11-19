@@ -58,7 +58,7 @@ class Client(SocketClient):
             pass
         else:
             self._send_new_room()
-        self._state = 'waiting'
+        self._state = 'in_room'
 
     def _draw(self):
         button(
@@ -77,12 +77,26 @@ class Client(SocketClient):
                 self._game_window.screen,
                 self._choose_room,
             )
-        elif self._state == 'waiting':
+        elif self._state == 'in_room':
             if self.room:
                 font = pygame.font.SysFont('arial', 20)
                 self._draw_text(20, 20, 600, font)
-        elif self._state == 'playing':
-            pass
+
+                if self.room.state == 'waiting':
+                    button(
+                        680, 280, 260, 50,
+                        'Play',
+                        (0, 255, 0), (50, 205, 50),
+                        self._game_window.screen,
+                        self._send_play,
+                    )
+                elif self.room.state == 'playing':
+                    button( # inactive button
+                        680, 280, 260, 50,
+                        'Playing',
+                        (144, 238, 144), (144, 238, 144),
+                        self._game_window.screen,
+                    )
 
     def run(self):
         super().run() # updates room
@@ -95,17 +109,12 @@ class Client(SocketClient):
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-                    elif self.event.type == pygame.KEYDOWN:
+                    elif event.type == pygame.KEYDOWN:
                         k = to_char(event.key, shifted=bool(mods & pygame.KMOD_SHIFT))
-                        self._send_input(k)
+                        if k:
+                            self._send_input(k)
 
-                self._draw() # temp
-
-                # todo:
-                # get input
-                # add things to draw
-                #   self._game_window.screen.blit
-
+                self._draw()
                 self._game_window.draw()
             except KeyboardInterrupt:
                 running = False

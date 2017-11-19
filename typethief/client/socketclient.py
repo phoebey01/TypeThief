@@ -44,6 +44,9 @@ class _ClientNamespace(BaseNamespace):
         if pos == self._room.text.next_pos:
             self._room.text.claim_next(self._room.get_player(player_id))
 
+    def on_play(self, response):
+        # response: {}
+        self._room.state = 'playing'
 
 class SocketClient(object):
     """
@@ -82,4 +85,8 @@ class SocketClient(object):
         message = self._message_prototype()
         message['key'] = key
         self._namespace.emit('input', message)
+
+    def _send_play(self):
+        message = self._message_prototype()
+        self._namespace.emit('play', message)
 

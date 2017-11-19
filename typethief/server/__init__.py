@@ -42,6 +42,8 @@ class _ServerNamespace(Namespace):
 
                     if event_type == 'claim':
                         response['pos'] = event_body['pos']
+                    elif event_type == 'play':
+                        reponse = {}
 
                     emit(event_type, response, room=room.id, namespace=self.namespace)
 
@@ -61,6 +63,15 @@ class _ServerNamespace(Namespace):
             message['timestamp'],
             'input',
             {'key': message['key']},
+        )
+
+    def on_play(self, message):
+        # message = {'player_id':, 'room_id':, 'timestamp':,}
+        self._rooms[message['room_id']].add_event(
+            message['player_id'],
+            message['timestamp'],
+            'play',
+            {},
         )
 
 

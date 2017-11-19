@@ -25,8 +25,6 @@ class RoomControl(Room):
     """
     def __init__(self):
         self._player_queues = {}
-        self._state = 'waiting' # waiting, playing, finished
-        self._state_mutex = threading.Lock()
         super().__init__()
 
     def _new_queue(self, player_id):
@@ -51,14 +49,16 @@ class RoomControl(Room):
         with lock:
             q.put_event(timestamp, (event_type, event_body))
 
-    # todo: handle event
     def _handle_event(self, player_id, event):
         event_type, event_body = event
 
-        if event_type == 'input':
+        if self._state == 'playing' and event_type == 'input':
             pos = self._text.claim_next(self._players[player_id], event_body['key'])
             if pos != None:
                 return player_id, ('claim', {'pos': pos})
+        elif self._state == 'waiting' and event_type == 'play':
+            self.state = 'playing'
+            return player_id, ('play', {})
 
         return None
 
@@ -81,7 +81,3 @@ class RoomControl(Room):
                 executed_events.append(handled)
 
         return executed_events
-
-    def play(self):
-        with self._state_mutex:
-            self._state = 'playing'
