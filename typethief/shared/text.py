@@ -1,5 +1,7 @@
 # typethief/shared/text.py
 
+import os
+import json
 import random
 import re
 import requests
@@ -9,17 +11,7 @@ from bs4 import BeautifulSoup
 
 
 _TYPERACER_TEXTS_URL = 'http://www.typeracerdata.com/texts?texts=full&sort=relative_average'
-
-
-def get_random_text():
-    r = requests.get(_TYPERACER_TEXTS_URL)
-    soup = BeautifulSoup(r.text, 'html.parser')
-    rows = soup.select('table.stats tr')
-    i = random.randrange(1, len(rows))
-    cells = rows[i].find_all('td')
-    text_id = int(re.sub(r'#(\d+)', r'\1', cells[1].get_text()))
-    text = cells[2].a.get_text()
-    return text_id, text
+_TEXTS_FNAME = 'typethief/shared/texts.txt'
 
 
 class Character(object):
@@ -84,7 +76,7 @@ class Text(object):
     Represents a TypeThief text
     Each text has set of scored characters, and the next available character
     """
-    _cached_texts = None
+    _cached_texts = {}
 
     def __init__(self, text=None, encoded=None):
         """
@@ -145,20 +137,28 @@ class Text(object):
         """
         Lazily loads texts to cls._cached_texts
         Texts are scraped from TypeRacer
+        Loaded from file if available
         """
         if not cls._cached_texts:
-            r = requests.get(_TYPERACER_TEXTS_URL)
-            soup = BeautifulSoup(r.text, 'html.parser')
-            cls._cached_texts = []
-            rows = soup.select('table.stats tr')
-            for i in range(1, len(rows)):
-                cells = rows[i].find_all('td')
-                text_id = int(re.sub(r'#(\d+)', r'\1', cells[1].get_text()))
-                text = cells[2].a.get_text()
-                cls._cached_texts.append((text_id, text))
+            if os.path.isfile(_TEXTS_FNAME):
+                with open(_TEXTS_FNAME, 'r') as f:
+                    cls._cached_texts = json.load(f)
+            else:
+                r = requests.get(_TYPERACER_TEXTS_URL)
+                soup = BeautifulSoup(r.text, 'html.parser')
+                rows = soup.select('table.stats tr')
+                for i in range(1, len(rows)):
+                    cells = rows[i].find_all('td')
+                    text_id = int(re.sub(r'#(\d+)', r'\1', cells[1].get_text()))
+                    text = cells[2].a.get_text()
+                    cls._cached_texts[text_id] = text
 
-        i = random.randrange(0, len(cls._cached_texts))
-        return cls._cached_texts[i]
+                # save texts to file
+                with open(_TEXTS_FNAME, 'w+') as f:
+                    json.dump(cls._cached_texts, f)
+
+        text_id, text = random.choice(cls._cached_texts.items())
+        return text_id, text
 
     @staticmethod
     def _make_characters(text):
