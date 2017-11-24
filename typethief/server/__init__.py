@@ -20,6 +20,8 @@ class _ServerNamespace(Namespace):
         self._rooms = {} # room_id: room
         super(_ServerNamespace, self).__init__(*args, **kwargs)
 
+    def _emit_error(message):
+        emit('error', {'error': message})
 
     def on_connect(self):
         print('[Client connected]')
@@ -28,13 +30,22 @@ class _ServerNamespace(Namespace):
         # todo: add leaving
         print('[Client disconnected]')
 
+    def _join_room(self, room=None):
+        """
+        This function must be called in a request context
+        """
+        if not room:
+            room = RoomControl()
+            self._rooms[room.id] = room
+        new_player = Player(player_id=request.sid)
+        room.add_player(new_player)
+        join_room(room.id)
+        join_room(new_player.id) # allow messaging specific client
+        return room, new_player
+
     def on_new_room(self, message):
         # message = {}
-        new_room = RoomControl()
-        new_player = Player(player_id=request.sid)
-
-        new_room.add_player(new_player)
-        self._rooms[new_room.id] = new_room
+        new_room, new_player = self._join_room()
 
         @copy_current_request_context
         def handle_events(room):
@@ -54,9 +65,21 @@ class _ServerNamespace(Namespace):
         t.start()
 
         response = {'player_id': new_player.id, 'room': new_room.encode()}
-        join_room(new_room.id)
-        join_room(new_player.id) # allow messaging to speific client
         emit('new_room_response', response)
+
+    def on_join_room(self, message):
+        # message = {'room_id':,}
+        room = self._rooms[message['room_id']]
+        if room.state != 'waiting':
+            self._emit_error('Room has closed')
+            return
+
+        room, new_player = self._join_room(room=room)
+        sender_response = {'player_id': new_player.id, 'room': room.encode()}
+        emit('join_room_response', sender_response)
+        room_response = {'player_id': new_player.id}
+        emit('new_player', room_response, room=room.id)
+
 
     def on_input(self, message):
         # message = {'player_id':, 'room_id':, 'timestamp':, 'key':,}

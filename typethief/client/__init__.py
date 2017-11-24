@@ -63,10 +63,10 @@ class Client(SocketClient):
 
     def _choose_room(self, room_id=None):
         if room_id:
-            pass
+            self._send_join_room(room_id)
         else:
             self._send_new_room()
-        self._state = 'in_room'
+        self._state = 'in_room' # todo: fix if unsuccessful room join
 
     def _draw(self):
         button(
@@ -80,7 +80,6 @@ class Client(SocketClient):
         if self._state == 'menu':
             self._send_get_rooms()
             open_rooms = self._get_open_rooms()
-            print(open_rooms)
 
             button(
                 680, 350, 260, 50,

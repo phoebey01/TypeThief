@@ -6,6 +6,7 @@ import threading
 
 from socketIO_client import SocketIO
 from socketIO_client import BaseNamespace
+from typethief.shared.player import Player
 from typethief.shared.room import Room
 
 
@@ -42,6 +43,12 @@ class _ClientNamespace(BaseNamespace):
         print('[Disconnected]')
 
     def on_new_room_response(self, response):
+        # response: {'player_id':, 'room':,}
+        self._player_id = response['player_id']
+        self._room = Room(encoded=response['room'])
+
+    def on_join_room_response(self, response):
+        # response: {'player_id':, 'room':,}
         self._player_id = response['player_id']
         self._room = Room(encoded=response['room'])
 
@@ -57,6 +64,13 @@ class _ClientNamespace(BaseNamespace):
 
     def on_get_rooms_response(self, response):
         self._open_rooms = response['rooms']
+
+    def on_new_player(self, response):
+        # response: {'player_id':,}
+        player_id = response['player_id']
+        if not self._room.get_player(player_id):
+            new_player = Player(player_id=player_id)
+            self._room.add_player(new_player)
 
 
 class SocketClient(object):
@@ -90,6 +104,10 @@ class SocketClient(object):
     def _send_new_room(self):
         self._namespace.emit('new_room', {})
 
+    def _send_join_room(self, room_id):
+        message = {'room_id': room_id}
+        self._namespace.emit('join_room', message)
+
     def _send_input(self, key):
         if not self.room:
             return
@@ -98,8 +116,9 @@ class SocketClient(object):
         self._namespace.emit('input', message)
 
     def _send_play(self):
-        message = self._message_prototype()
-        self._namespace.emit('play', message)
+        if self.room.state == 'waiting':
+            message = self._message_prototype()
+            self._namespace.emit('play', message)
 
     def _send_get_rooms(self):
         self._namespace.emit('get_rooms', {})
