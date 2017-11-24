@@ -7,9 +7,10 @@ from .textutils import render_text
 def button(x, y, w, h, text, on_color, off_color, screen, action=None):
     dims = x, y, w, h
     mx, my = pygame.mouse.get_pos()
+    ox, oy = screen.get_abs_offset()
     mdown, mup, mmotion = pygame.mouse.get_pressed()
 
-    if x < mx < x + w and y < my < y + h:
+    if x < mx - ox < x + w and y < my - oy < y + h:
         pygame.draw.rect(screen, on_color, dims)
         if mdown and action:
             action()

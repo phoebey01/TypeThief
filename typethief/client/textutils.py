@@ -1,11 +1,23 @@
 # typethief/client/textutils.py
 
+import pygame
+
+
 def render_text(x, y, text, font, color=(0, 0, 0), background=None):
     surf = font.render(text, True, color, background)
     rect = surf.get_rect()
     rect.x = x
     rect.y = y
     return surf, rect
+
+
+def rect_text(x, y, w, h, text, bg_color, screen):
+    dims = x, y, w, h
+    pygame.draw.rect(screen, bg_color, dims)
+    font = pygame.font.SysFont('arial', 18)
+    tw, th = font.size(text)
+    surf, rect = render_text(x + (w - tw)/2, y + (h - th)/2, text, font)
+    screen.blit(surf, rect)
 
 
 def wrap_text(text, font, width=None):

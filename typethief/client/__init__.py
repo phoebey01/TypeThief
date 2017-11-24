@@ -7,6 +7,7 @@ import pygame
 from .button import button
 from .gamewindow import GameWindow
 from .textutils import to_char
+from .textutils import rect_text
 from .textutils import render_text
 from .textutils import wrap_text
 from typethief.shared.room import Room
@@ -68,6 +69,29 @@ class Client(SocketClient):
             self._send_new_room()
         self._state = 'in_room' # todo: fix if unsuccessful room join
 
+    def _draw_room_menu(self, rooms):
+            room_menu = self._game_window.screen.subsurface(
+                pygame.Rect((680, 30), (260, 250)),
+            )
+            room_menu.fill((176, 224, 230))
+
+            rect_text(
+                0, 0, 260, 50,
+                'Get Room',
+                (65, 105, 225),
+                room_menu,
+            )
+            y = 50
+            for room in rooms:
+                button(
+                    0, y, 260, 50,
+                    str(room),
+                    (95, 158, 160), (176, 224, 230),
+                    room_menu,
+                    lambda: self._choose_room(room_id=room)
+                )
+                y += 50
+
     def _draw(self):
         button(
             680, 410, 260, 50,
@@ -78,8 +102,10 @@ class Client(SocketClient):
         )
         
         if self._state == 'menu':
+
             self._send_get_rooms()
             open_rooms = self._get_open_rooms()
+            self._draw_room_menu(open_rooms)
 
             button(
                 680, 350, 260, 50,
@@ -88,6 +114,7 @@ class Client(SocketClient):
                 self._game_window.screen,
                 self._choose_room,
             )
+            
         elif self._state == 'in_room':
             if self.room:
                 font = pygame.font.SysFont('arial', 20)
