@@ -14,18 +14,34 @@ def parse_args():
         help='Configuration',
         default='prod',
     )
+    parser.add_argument(
+        '-i',
+        '--ip',
+        help='Server ip',
+        default=None,
+    )
+    parser.add_argument(
+        '-p',
+        '--port',
+        help='Server port',
+        default=None,
+    )
 
     args = parser.parse_args()
     if args.config not in config.CONFIGS:
         parser.error('"{}" is not a valid configuration'.format(args.config))
+    conf = config.CONFIGS[args.config]
+    if not args.ip:
+        args.ip = conf.SERVER_ADDRESS
+    if not args.port:
+        args.port = conf.SERVER_PORT
 
     return args
 
 
 def main():
     args = parse_args()
-    conf = config.CONFIGS[args.config]
-    cli = Client(conf.SERVER_ADDRESS, conf.SERVER_PORT)
+    cli = Client(args.ip, args.port)
     cli.run()
 
 

@@ -96,7 +96,3 @@ class Server(object):
 
     def run(self):
         self._socketio.run(self._app, host='0.0.0.0', port=5000)
-        # self._server_socket_thread.start()
-        # while True:
-        #     # todo: process events
-        #     pass
