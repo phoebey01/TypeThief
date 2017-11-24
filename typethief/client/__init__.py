@@ -42,14 +42,18 @@ class Client(SocketClient):
             lx = x
             for c in l:
                 color = 0, 0, 0
+                background = None
                 if ci < len(claimed):
                     c, val, claimer = claimed[ci]
                     ci += 1
                     #color = 255, 0, 0
                     player = self.room.get_player(claimer)
-                    color = player.color
+                    background = player.color
 
-                surfrects.append(render_text(lx, ly, c, font, color=color))
+                surfrects.append(render_text(
+                    lx, ly, c, font,
+                    color=color, background=background,
+                ))
                 lx += font.size(c)[0]
             ly += font.size(l)[1]
 

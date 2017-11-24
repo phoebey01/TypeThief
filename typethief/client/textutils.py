@@ -1,7 +1,7 @@
 # typethief/client/textutils.py
 
-def render_text(x, y, text, font, color=(0, 0, 0)):
-    surf = font.render(text, True, color)
+def render_text(x, y, text, font, color=(0, 0, 0), background=None):
+    surf = font.render(text, True, color, background)
     rect = surf.get_rect()
     rect.x = x
     rect.y = y
