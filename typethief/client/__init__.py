@@ -24,17 +24,10 @@ class Client(SocketClient):
         self._game_window = GameWindow()
         self._state = 'menu' # menu, waiting, playing
 
-        self._poll_rooms_thread = threading.Thread(target=self._poll_open_rooms)
-        self._poll_rooms_thread.daemon = True
-
     def _quit(self):
         pygame.display.quit()
         pygame.quit()
         exit()
-
-    def _poll_open_rooms(self):
-        while self._state == 'menu':
-            self._send_get_rooms()
 
     def _draw_text(self, x, y, w, font):
         text_obj = self.room.text
@@ -85,9 +78,9 @@ class Client(SocketClient):
         )
         
         if self._state == 'menu':
-            if not self._poll_rooms_thread.is_alive():
-                self._poll_rooms_thread.start()
+            self._send_get_rooms()
             open_rooms = self._get_open_rooms()
+            print(open_rooms)
 
             button(
                 680, 350, 260, 50,
