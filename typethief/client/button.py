@@ -3,6 +3,13 @@
 import pygame
 from .textutils import render_text
 
+def text(x, y, w, h, text, bg_color, screen):
+    dims = x, y, w, h
+    pygame.draw.rect(screen, bg_color, dims)
+    font = pygame.font.SysFont('arial', 18)
+    tw, th = font.size(text)
+    surf, rect = render_text(x + (w - tw)/2, y + (h - th)/2, text, font)
+    screen.blit(surf, rect)
 
 def button(x, y, w, h, text, on_color, off_color, screen, action=None):
     dims = x, y, w, h

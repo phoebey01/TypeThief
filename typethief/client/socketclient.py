@@ -15,9 +15,11 @@ class _ClientNamespace(BaseNamespace):
     Contains room because room needs to change based on server messages
     """
     def __init__(self, *args, **kwargs):
+        super(_ClientNamespace, self).__init__(*args, **kwargs)
+
         self._player_id = None
         self._room = None
-        super(_ClientNamespace, self).__init__(*args, **kwargs)
+        self._open_rooms = [] # not considered intrinsic state     
 
     @property
     def id(self):
@@ -26,6 +28,9 @@ class _ClientNamespace(BaseNamespace):
     @property
     def room(self):
         return self._room
+
+    def get_open_rooms(self):
+        return self._open_rooms[:]
 
     def on_connect(self):
         print('[Connected]')
@@ -50,6 +55,10 @@ class _ClientNamespace(BaseNamespace):
         # response: {}
         self._room.state = 'playing'
 
+    def on_get_rooms_response(self, response):
+        self._open_rooms = response['rooms']
+
+
 class SocketClient(object):
     """
     """
@@ -68,8 +77,8 @@ class SocketClient(object):
     def room(self):
         return self._namespace.room
 
-    def run(self):
-        self._receive_events_thread.start()
+    def _get_open_rooms(self):
+        return self._namespace.get_open_rooms()
 
     def _message_prototype(self):
         return {
@@ -92,3 +101,8 @@ class SocketClient(object):
         message = self._message_prototype()
         self._namespace.emit('play', message)
 
+    def _send_get_rooms(self):
+        self._namespace.emit('get_rooms', {})
+
+    def run(self):
+        self._receive_events_thread.start()

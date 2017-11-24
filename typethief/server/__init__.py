@@ -45,7 +45,7 @@ class _ServerNamespace(Namespace):
                     if event_type == 'claim':
                         response['pos'] = event_body['pos']
                     elif event_type == 'play':
-                        reponse = {}
+                        response = {}
 
                     emit(event_type, response, room=room.id, namespace=self.namespace)
 
@@ -76,6 +76,16 @@ class _ServerNamespace(Namespace):
             {},
         )
 
+    def on_get_rooms(self, message):
+        # message = {}
+        open_rooms = [
+            room_id
+            for room_id in self._rooms
+            if self._rooms[room_id].state == 'waiting'
+        ]
+        response = {'rooms': open_rooms}
+        emit('get_rooms_response', response)
+
 
 class Server(object):
     """
@@ -88,15 +98,5 @@ class Server(object):
         self._socketio = SocketIO(self._app)
         self._socketio.on_namespace(_ServerNamespace('/play'))
 
-        self._server_socket_thread = threading.Thread(
-            target=self._socketio.run,
-            args=(self._app,),
-        )
-        self._server_socket_thread.daemon = True
-
     def run(self):
         self._socketio.run(self._app, host='0.0.0.0', port=5000)
-        # self._server_socket_thread.start()
-        # while True:
-        #     # todo: process events
-        #     pass

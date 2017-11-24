@@ -1,10 +1,12 @@
 # typethief/client/__init__.py
 
 import threading
+import time
 
 import pygame
 from .button import button
 from .button import room_button
+from .button import text
 from .gamewindow import GameWindow
 from .textutils import to_char
 from .textutils import render_text
@@ -78,7 +80,11 @@ class Client(SocketClient):
         )
         
         if self._state == 'menu':
-            self._draw_room_menu()
+
+            self._send_get_rooms()
+            open_rooms = self._get_open_rooms()
+            self._draw_room_menu(open_rooms)
+
             button(
                 680, 350, 260, 50,
                 'New Room',
@@ -108,28 +114,25 @@ class Client(SocketClient):
                         self._game_window.screen,
                     )
 
-    def _draw_room_menu(self):
+    def _draw_room_menu(self, rooms):
             roomMenu = pygame.Surface((260, 250))
             roomMenu.fill((176, 224, 230))
-            room_button(
+            text(
                 0, 0, 260, 50,
                 'Get Room',
-                (95, 158, 160), (176, 224, 230),
+                (176, 224, 230),
                 roomMenu,
             )
-            room_button(
-                0, 50, 260, 50,
-                'Room1',
-                (95, 158, 160), (176, 224, 230),
-                roomMenu,
-            )
-            room_button(
-                0, 100, 260, 50,
-                'Room2',
-                (95, 158, 160), (176, 224, 230),
-                roomMenu,
-            )
-
+            y = 50
+            for room in rooms:
+                room_button(
+                    0, y, 260, 50,
+                    str(room),
+                    (95, 158, 160), (176, 224, 230),
+                    roomMenu,
+                )
+                y += 50
+            
             self._game_window.screen.blit(roomMenu, (680, 30))
 
 

@@ -13,7 +13,7 @@ class Room(object):
     """
     Represents the state of a single game
     """
-    _STATES = set(['waiting', 'playing', 'finished'])
+    STATES = set(['waiting', 'playing', 'finished'])
     _next_room = 0
 
     def __init__(self, encoded=None):
@@ -67,7 +67,7 @@ class Room(object):
 
     @state.setter
     def state(self, new_state):
-        if new_state not in Room._STATES:
+        if new_state not in Room.STATES:
             raise Exception('{} is not a valid state'.format(new_state))
         self._state = new_state
 
