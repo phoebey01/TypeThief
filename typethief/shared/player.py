@@ -1,6 +1,7 @@
 # typethief/shared/player.py
 
 from .text import Character
+import random
 
 
 class Player(object):
@@ -17,6 +18,8 @@ class Player(object):
         """
         self._claimed = []
         self._score = 0
+        self._color = self._random_color()
+
 
         if encoded:
             self.decode(encoded)
@@ -39,6 +42,9 @@ class Player(object):
             self._claimed.append(char)
             self._score += char.val
 
+    def _random_color(self):
+        return (random.randint(0,255), random.randint(0,255), random.randint(0,255)) 
+
     @property
     def score(self):
         return self._score
@@ -46,6 +52,10 @@ class Player(object):
     @property
     def id(self):
         return self._player_id
+
+    @property
+    def color(self):
+        return self._color
 
     @classmethod
     def _new_player_id(cls):

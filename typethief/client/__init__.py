@@ -45,7 +45,10 @@ class Client(SocketClient):
                 if ci < len(claimed):
                     c, val, claimer = claimed[ci]
                     ci += 1
-                    color = 255, 0, 0
+                    #color = 255, 0, 0
+                    player = self.room.get_player(claimer)
+                    color = player.color
+
                 surfrects.append(render_text(lx, ly, c, font, color=color))
                 lx += font.size(c)[0]
             ly += font.size(l)[1]
