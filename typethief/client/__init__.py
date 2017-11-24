@@ -1,7 +1,6 @@
 # typethief/client/__init__.py
 
 import threading
-from queue import PriorityQueue
 
 import pygame
 from .button import button
@@ -19,7 +18,8 @@ class Client(SocketClient):
     including the game window, networking, and event handling.
     """
     def __init__(self, server_address, server_port):
-        super().__init__(server_address, server_port)
+        super(Client, self).__init__(server_address, server_port)
+
         self._game_window = GameWindow()
         self._state = 'menu' # menu, waiting, playing
 
@@ -99,7 +99,7 @@ class Client(SocketClient):
                     )
 
     def run(self):
-        super().run() # updates room
+        super(Client, self).run() # updates room
         running = True
         while running:
             try:

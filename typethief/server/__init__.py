@@ -1,5 +1,6 @@
 # typethief/server/__init__.py
 
+from __future__ import print_function
 import threading
 
 from flask import copy_current_request_context
@@ -17,7 +18,8 @@ from typethief.shared.player import Player
 class _ServerNamespace(Namespace):
     def __init__(self, *args, **kwargs):
         self._rooms = {} # room_id: room
-        super().__init__(*args, **kwargs)
+        super(_ServerNamespace, self).__init__(*args, **kwargs)
+
 
     def on_connect(self):
         print('[Client connected]')

@@ -20,7 +20,7 @@ class GameWindow(object):
         self._time = pygame.time.Clock()
         self._fps = fps
         self._screen = pygame.display.set_mode(self._size)
-
+        
     @property
     def width(self):
         return self._size[0]

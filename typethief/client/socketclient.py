@@ -1,5 +1,7 @@
 # typethief/client/socketclient.py
 
+from __future__ import print_function
+
 import threading
 
 from socketIO_client import SocketIO
@@ -15,7 +17,7 @@ class _ClientNamespace(BaseNamespace):
     def __init__(self, *args, **kwargs):
         self._player_id = None
         self._room = None
-        super().__init__(*args, **kwargs)
+        super(_ClientNamespace, self).__init__(*args, **kwargs)
 
     @property
     def id(self):

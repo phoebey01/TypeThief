@@ -7,25 +7,14 @@ from .eventqueue import EventQueue
 from typethief.shared.room import Room
 
 
-class RoomControlException(Exception):
-    pass
-
-
-class Playing(RoomControlException):
-    pass
-
-
-class Finished(RoomControlException):
-    pass
-
-
 class RoomControl(Room):
     """
     Rooms augmented with queues for each player
     """
     def __init__(self):
         self._player_queues = {}
-        super().__init__()
+        super(RoomControl, self).__init__()
+
 
     def _new_queue(self, player_id):
         if player_id not in self._player_queues:
@@ -36,12 +25,12 @@ class RoomControl(Room):
             del self._player_queues[player_id]
 
     def add_player(self, player):
-        super().add_player(player)
+        super(RoomControl, self).add_player(player)
         self._new_queue(player.id)
 
     def remove_player(self, player):
         self._delete_queue(player.id)
-        super().remove_player(player.id)
+        super(RoomControl, self).remove_player(player.id)
 
     def add_event(self, player_id, timestamp, event_type, event_body):
         # will raise KeyError if queue doesnt exist
