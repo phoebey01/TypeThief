@@ -37,6 +37,9 @@ class GameWindow(object):
     def screen(self):
         return self._screen
 
+    def blit(self, *args, **kwargs):
+        self._screen.blit(*args, **kwargs)
+
     def clear_screen(self):
         self._screen.fill(GameWindow.BG_COLOR)
 

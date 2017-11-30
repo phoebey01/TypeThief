@@ -15,7 +15,6 @@ class RoomControl(Room):
         self._player_queues = {}
         super(RoomControl, self).__init__()
 
-
     def _new_queue(self, player_id):
         if player_id not in self._player_queues:
             self._player_queues[player_id] = (EventQueue(), threading.Lock())
@@ -48,7 +47,6 @@ class RoomControl(Room):
         elif self._state == 'waiting' and event_type == 'play':
             self.state = 'playing'
             return player_id, ('play', {})
-
 
         return None
 
