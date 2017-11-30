@@ -49,6 +49,7 @@ class RoomControl(Room):
             self.state = 'playing'
             return player_id, ('play', {})
 
+
         return None
 
     def execute(self):

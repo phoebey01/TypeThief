@@ -109,6 +109,14 @@ class _ServerNamespace(Namespace):
         response = {'rooms': open_rooms}
         emit('get_rooms_response', response)
 
+    def on_null(self, message):
+        self._rooms[message['room_id']].add_event(
+            message['player_id'],
+            message['timestamp'],
+            'null',
+            {},
+        )
+
 
 class Server(object):
     """

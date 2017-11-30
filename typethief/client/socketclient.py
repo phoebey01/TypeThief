@@ -123,5 +123,9 @@ class SocketClient(object):
     def _send_get_rooms(self):
         self._namespace.emit('get_rooms', {})
 
+    def _send_null(self):
+        message = self._message_prototype()
+        self._namespace.emit('null', message)
+
     def run(self):
         self._receive_events_thread.start()

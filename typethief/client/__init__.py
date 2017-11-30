@@ -81,16 +81,16 @@ class Client(SocketClient):
                 (65, 105, 225),
                 room_menu,
             )
-            y = 50
+            bottom = 50
             for room in rooms:
                 button(
-                    0, y, 260, 50,
+                    0, bottom, 260, 50,
                     str(room),
                     (95, 158, 160), (176, 224, 230),
                     room_menu,
                     lambda: self._choose_room(room_id=room)
                 )
-                y += 50
+                bottom += 50
 
     def _draw(self):
         button(
@@ -142,6 +142,9 @@ class Client(SocketClient):
         while running:
             try:
                 self._game_window.clear_screen()
+
+                if self.room:
+                    self._send_null()
 
                 mods = pygame.key.get_mods()
                 for event in pygame.event.get():
