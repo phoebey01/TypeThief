@@ -69,6 +69,10 @@ class Client(SocketClient):
             self._send_new_room()
         self._state = 'in_room' # todo: fix if unsuccessful room join
 
+    def _leave_room(self):
+        self._send_leave_room()
+        self._state = 'menu'
+
     def _draw_room_menu(self, rooms):
             room_menu = self._game_window.screen.subsurface(
                 pygame.Rect((680, 30), (260, 250)),
@@ -128,6 +132,13 @@ class Client(SocketClient):
                         self._game_window.screen,
                         self._send_play,
                     )
+                    button(
+                        680, 200, 260, 50,
+                        'Leave Room',
+                        (230, 153, 255), (204, 153, 255),
+                        self._game_window.screen,
+                        self._leave_room,
+                    )
                 elif self.room.state == 'playing':
                     button( # inactive button
                         680, 280, 260, 50,
@@ -135,6 +146,8 @@ class Client(SocketClient):
                         (144, 238, 144), (144, 238, 144),
                         self._game_window.screen,
                     )
+
+                    
 
     def run(self):
         super(Client, self).run() # updates room

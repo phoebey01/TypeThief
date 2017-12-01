@@ -117,6 +117,20 @@ class _ServerNamespace(Namespace):
             {},
         )
 
+    def on_leave_room(self, message):
+        room = self._rooms[message['room_id']]
+        room.remove_player(message['player_id'])
+
+        sender_response = True
+        emit('leave_room_response', sender_response)
+        
+        if room.has_player():
+            room_response = {'player_id': message['player_id']}
+            emit('player_quit', room_response)
+        else:
+            del self._rooms[message['room_id']]
+
+
 
 class Server(object):
     """

@@ -65,6 +65,10 @@ class Room(object):
     def state(self):
         return self._state
 
+    @property
+    def size(self):
+        return len(self._players)
+
     @state.setter
     def state(self, new_state):
         if new_state not in Room.STATES:

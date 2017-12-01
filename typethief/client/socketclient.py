@@ -20,7 +20,7 @@ class _ClientNamespace(BaseNamespace):
 
         self._player_id = None
         self._room = None
-        self._open_rooms = [] # not considered intrinsic state     
+        self._open_rooms = [] # not considered intrinsic state  
 
     @property
     def id(self):
@@ -47,10 +47,14 @@ class _ClientNamespace(BaseNamespace):
         self._player_id = response['player_id']
         self._room = Room(encoded=response['room'])
 
+        print (self._room.id)
+
     def on_join_room_response(self, response):
         # response: {'player_id':, 'room':,}
         self._player_id = response['player_id']
         self._room = Room(encoded=response['room'])
+
+        self._quit = False
 
     def on_claim(self, response):
         # response: {'player_id':, pos':,}
@@ -71,6 +75,19 @@ class _ClientNamespace(BaseNamespace):
         if not self._room.get_player(player_id):
             new_player = Player(player_id=player_id)
             self._room.add_player(new_player)
+
+    def on_player_quit(self, response):
+        # response: {'player_id':}
+        player_id = response['player_id']
+        if self._room.get_player(player_id):
+            self._room.remove_player(player_id)
+
+    def on_leave_room_response(self, response):
+        if response:
+            print ('Leaving rome')
+            self._room = None
+            self._player_id = None
+            print (self._open_rooms)
 
 
 class SocketClient(object):
@@ -126,6 +143,10 @@ class SocketClient(object):
     def _send_null(self):
         message = self._message_prototype()
         self._namespace.emit('null', message)
+
+    def _send_leave_room(self):
+        message = self._message_prototype()
+        self._namespace.emit('leave_room', message)
 
     def run(self):
         self._receive_events_thread.start()

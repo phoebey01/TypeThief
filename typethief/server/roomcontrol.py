@@ -28,9 +28,15 @@ class RoomControl(Room):
         super(RoomControl, self).add_player(player)
         self._new_queue(player.id)
 
-    def remove_player(self, player):
-        self._delete_queue(player.id)
-        super(RoomControl, self).remove_player(player.id)
+    def remove_player(self, player_id):
+        self._delete_queue(player_id)
+        super(RoomControl, self).remove_player(player_id)
+
+    def has_player(self):
+        if self.size > 0:
+            return True
+        else:
+            return False
 
     def add_event(self, player_id, timestamp, event_type, event_body):
         # will raise KeyError if queue doesnt exist
@@ -48,7 +54,6 @@ class RoomControl(Room):
         elif self._state == 'waiting' and event_type == 'play':
             self.state = 'playing'
             return player_id, ('play', {})
-
 
         return None
 
