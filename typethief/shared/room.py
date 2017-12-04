@@ -63,7 +63,8 @@ class Room(object):
 
     @property
     def state(self):
-        return self._state
+        # if there is no next char, then finished
+        return self._state if self._text.next_char else 'finished'
 
     @property
     def size(self):

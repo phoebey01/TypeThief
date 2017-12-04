@@ -118,11 +118,12 @@ class Text(object):
 
     @property
     def next_char(self):
-        return self._next_char().c
+        nc = self._next_char()
+        return nc.c if nc else None
 
     @property
     def next_pos(self):
-        return self._next
+        return self._next if self._next < len(self._characters) else None
 
     def get_char(self, i):
         """
