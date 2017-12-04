@@ -60,7 +60,7 @@ class Client(SocketClient):
             ly += font.size(l)[1]
 
         for surf, rect in surfrects:
-            self._game_window.screen.blit(surf, rect)
+            self._game_window.blit(surf, rect)
 
     def _choose_room(self, room_id=None):
         if room_id:
@@ -74,27 +74,69 @@ class Client(SocketClient):
         self._state = 'menu'
 
     def _draw_room_menu(self, rooms):
-            room_menu = self._game_window.screen.subsurface(
-                pygame.Rect((680, 30), (260, 250)),
-            )
-            room_menu.fill((176, 224, 230))
+        room_menu = self._game_window.screen.subsurface(
+            pygame.Rect((680, 30), (260, 250)),
+        )
+        room_menu.fill((176, 224, 230))
 
-            rect_text(
-                0, 0, 260, 50,
-                'Get Room',
-                (65, 105, 225),
+        rect_text(
+            0, 0, 260, 50,
+            'Get Room',
+            (65, 105, 225),
+            room_menu,
+        )
+        bottom = 50
+        for room in rooms:
+            button(
+                0, bottom, 260, 50,
+                str(room),
+                (95, 158, 160), (176, 224, 230),
                 room_menu,
+                lambda: self._choose_room(room_id=room)
             )
-            bottom = 50
-            for room in rooms:
-                button(
-                    0, bottom, 260, 50,
-                    str(room),
-                    (95, 158, 160), (176, 224, 230),
-                    room_menu,
-                    lambda: self._choose_room(room_id=room)
-                )
-                bottom += 50
+            bottom += 50
+
+    def _draw_player_panel(self):
+        x, y = 680, 20
+        pygame.draw.rect(
+            self._game_window.screen, 
+            (220, 220, 220),
+            (x, y, 260, 240),
+        )
+        rect_text(
+            x, y, 260, 30,
+            "Players",
+            (128, 128, 128),
+            self._game_window.screen,
+        )
+
+        font_hgt = 12
+        def draw_player_info(x, y, name, color, score):
+            font = pygame.font.SysFont('arial', font_hgt)
+            lsurf, lrect = render_text(x, y, name + ' ', font)
+            self._game_window.blit(lsurf, lrect)
+            mrect = pygame.draw.rect(
+                self._game_window.screen,
+                color,
+                (lrect.right, y, lrect.height, lrect.height),
+            )
+            rsurf, rrect = render_text(mrect.right, y, ': {}'.format(score), font)
+            self._game_window.blit(rsurf, rrect)
+
+        px, py = x + 10, y + 40
+
+        # current player
+        curr = self.room.get_player(self.player_id)
+        draw_player_info(px, py, "You", curr.color, curr.score)
+        py += font_hgt * 2
+
+        # other players
+        i = 0
+        for p in self.room:
+            if p.id != curr.id:
+                draw_player_info(px, py, "Player{}".format(i), p.color, p.score)
+                py += font_hgt
+            i += 1
 
     def _draw(self):
         button(
@@ -123,6 +165,7 @@ class Client(SocketClient):
             if self.room:
                 font = pygame.font.SysFont('arial', 20)
                 self._draw_text(20, 20, 600, font)
+                self._draw_player_panel()
 
                 if self.room.state == 'waiting':
                     button(
@@ -156,9 +199,6 @@ class Client(SocketClient):
             try:
                 self._game_window.clear_screen()
 
-                if self.room:
-                    self._send_null()
-
                 mods = pygame.key.get_mods()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -167,6 +207,9 @@ class Client(SocketClient):
                         k = to_char(event.key, shifted=bool(mods & pygame.KMOD_SHIFT))
                         if k:
                             self._send_input(k)
+
+                if self.room:
+                    self._send_null()
 
                 self._draw()
                 self._game_window.draw()

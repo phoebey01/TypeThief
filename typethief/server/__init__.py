@@ -60,9 +60,11 @@ class _ServerNamespace(Namespace):
 
                     emit(event_type, response, room=room.id, namespace=self.namespace)
 
-        t = threading.Thread(target=handle_events, args=(new_room,))
-        t.daemon = True
-        t.start()
+        # improve performance 
+        for i in xrange(5):
+            t = threading.Thread(target=handle_events, args=(new_room,))
+            t.daemon = True
+            t.start()
 
         response = {'player_id': new_player.id, 'room': new_room.encode()}
         emit('new_room_response', response)
@@ -144,4 +146,4 @@ class Server(object):
         self._socketio.on_namespace(_ServerNamespace('/play'))
 
     def run(self):
-        self._socketio.run(self._app, host='0.0.0.0', port=5000)
+        self._socketio.run(self._app, host='0.0.0.0', port=6000)
