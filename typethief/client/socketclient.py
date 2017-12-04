@@ -47,8 +47,6 @@ class _ClientNamespace(BaseNamespace):
         self._player_id = response['player_id']
         self._room = Room(encoded=response['room'])
 
-        print (self._room.id)
-
     def on_join_room_response(self, response):
         # response: {'player_id':, 'room':,}
         self._player_id = response['player_id']
@@ -84,10 +82,8 @@ class _ClientNamespace(BaseNamespace):
 
     def on_leave_room_response(self, response):
         if response:
-            print ('Leaving rome')
             self._room = None
             self._player_id = None
-            print (self._open_rooms)
 
 
 class SocketClient(object):
