@@ -32,7 +32,7 @@ class RoomControl(Room):
         super(RoomControl, self).remove_player(player_id)
 
     def has_player(self):
-        if self.size > 0:
+        if len(self._player_queues) > 0:
             return True
         else:
             return False
