@@ -75,8 +75,13 @@ class Room(object):
             yield p
 
     @property
-    def size(self):
-        return len(self._players)
+    def winner(self):
+        players = self._players.values()
+        winner = players[0]
+        for p in players:
+            if p.score > winner.score:
+                winner = p
+        return winner
 
     @state.setter
     def state(self, new_state):

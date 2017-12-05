@@ -127,7 +127,7 @@ class _ServerNamespace(Namespace):
         emit('leave_room_response', room_response)
         
         if room.has_player():
-            emit('player_quit', room_response)
+            emit('player_quit', room_response, room=room.id)
         else:
             del self._rooms[message['room_id']]
 

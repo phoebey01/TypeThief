@@ -26,6 +26,7 @@ class Client(SocketClient):
         self._state = 'menu' # menu, waiting, playing
 
     def _quit(self):
+    	self._leave_room()
         pygame.display.quit()
         pygame.quit()
         exit()
@@ -33,7 +34,8 @@ class Client(SocketClient):
     def _draw_text(self, x, y, w, font):
         text_obj = self.room.text
         text = text_obj.text
-        claimed = [text_obj.get_char(i) for i in range(text_obj.next_pos)]
+        if text_obj.next_pos is not None:
+            claimed = [text_obj.get_char(i) for i in range(text_obj.next_pos)]
         lines = wrap_text(text, font, w)
 
         # draw lines before next_line
@@ -162,7 +164,7 @@ class Client(SocketClient):
             )
             
         elif self._state == 'in_room':
-            if self.room:
+            if self.room and self.room.state != 'finished':
                 font = pygame.font.SysFont('arial', 20)
                 self._draw_text(20, 20, 600, font)
                 self._draw_player_panel()
@@ -190,6 +192,24 @@ class Client(SocketClient):
                         self._game_window.screen,
                     )
 
+            elif self.room and self.room.state == 'finished':
+            	font = pygame.font.SysFont('arial', 20)
+
+            	winner_id = self.room.winner.id
+
+            	if winner_id == self.player_id:
+	                surf, rect = render_text(50, 50, 'You win!', font)
+                else:
+                	surf, rect = render_text(50, 50, 'You lose!', font)
+
+            	self._game_window.blit(surf, rect)
+                button(
+                    680, 200, 260, 50,
+                    'Leave Room',
+                    (230, 153, 255), (204, 153, 255),
+                    self._game_window.screen,
+                    self._leave_room,
+                )
                     
 
     def run(self):

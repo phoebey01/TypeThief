@@ -77,13 +77,13 @@ class _ClientNamespace(BaseNamespace):
     def on_player_quit(self, response):
         # response: {'player_id':}
         player_id = response['player_id']
-        # print (self._room)
         if self._room:
 	        if self._room.get_player(player_id):
-	            self._room.remove_player(player_id)
+	        	print ('Remove player ' + str(player_id))
+	        	self._room.remove_player(player_id)
 
     def on_leave_room_response(self, response):
-    	# print (self._player_id, response['player_id'])
+    	# remove room and player_id when quiting
         if response['player_id'] == self._player_id:
             self._room = None
             self._player_id = None
