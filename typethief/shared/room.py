@@ -79,7 +79,7 @@ class Room(object):
         players = self._players.values()
         winner = players[0]
         for p in players:
-            if p.score > winner.score:
+            if p and p.score > winner.score:
                 winner = p
         return winner
 
@@ -94,6 +94,9 @@ class Room(object):
         room_id = 'room' + str(cls._next_room)
         cls._next_room += 1
         return room_id
+
+    def empty(self):
+        return len(self._players) == 0
 
     def get_player(self, player_id):
         return self._players[player_id]

@@ -27,8 +27,21 @@ class _ServerNamespace(Namespace):
         print('[Client connected]')
 
     def on_disconnect(self):
-        # todo: add leaving
-        print('[Client disconnected]')
+        player_id = request.sid
+        room = None
+        for rm in self._rooms.values():
+            if rm.get_player(player_id):
+                room = rm
+                break
+
+        if room:
+            room_alert = {'player_id': player_id}
+            if room.empty():
+                del self._rooms[room.id]
+            else:
+                emit('player_quit', room_response, room=room.id)
+
+        # print('[Client disconnected]')
 
     def _join_room(self, room=None):
         """
@@ -126,10 +139,10 @@ class _ServerNamespace(Namespace):
         room_response = {'player_id': message['player_id']}
         emit('leave_room_response', room_response)
         
-        if room.has_player():
-            emit('player_quit', room_response, room=room.id)
-        else:
+        if room.empty():
             del self._rooms[message['room_id']]
+        else:
+            emit('player_quit', room_response, room=room.id)
 
 
 
