@@ -53,9 +53,9 @@ class Client(SocketClient):
                 if ci < len(claimed):
                     c, val, claimer = claimed[ci]
                     ci += 1
-                    #color = 255, 0, 0
                     player = self.room.get_player(claimer)
-                    background = player.color
+                    background = player.color if player else None
+                    color = (0, 0, 0) if player else (255, 0, 0)
 
                 surfrects.append(render_text(
                     lx, ly, c, font,
@@ -75,7 +75,8 @@ class Client(SocketClient):
         self._state = 'in_room' # todo: fix if unsuccessful room join
 
     def _leave_room(self):
-        self._send_leave_room()
+        if self.room:
+            self._send_leave_room()
         self._state = 'menu'
 
     def _draw_room_menu(self, rooms):
@@ -138,7 +139,9 @@ class Client(SocketClient):
         # other players
         i = 0
         for p in self.room:
-            if p.id != curr.id:
+            if not p:
+                continue
+            elif p.id != curr.id:
                 draw_player_info(px, py, "Player{}".format(i), p.color, p.score)
                 py += font_hgt
             i += 1
@@ -166,7 +169,7 @@ class Client(SocketClient):
             self._draw_room_menu(open_rooms)
 
             button(
-                680, 350, 260, 50,
+                680, 345, 260, 50,
                 'New Room',
                 (0, 255, 0), (50, 205, 50),
                 self._game_window.screen,
@@ -184,7 +187,6 @@ class Client(SocketClient):
                 if w == 960 and h == 480:
                     path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
                     font = pygame.font.Font(path, 25)
-
                 self._draw_text(20, 20, 600, font)
                 self._draw_player_panel()
 
@@ -197,7 +199,7 @@ class Client(SocketClient):
                         self._send_play,
                     )
                     button(
-                        680, 200, 260, 50,
+                        680, 345, 260, 50,
                         'Leave Room',
                         (230, 153, 255), (204, 153, 255),
                         self._game_window.screen,
@@ -208,6 +210,12 @@ class Client(SocketClient):
                         680, 280, 260, 50,
                         'Playing',
                         (144, 238, 144), (144, 238, 144),
+                        self._game_window.screen,
+                    )
+                    button( # inactive button
+                        680, 345, 260, 50,
+                        'Leave Room',
+                         (234, 200, 255), (234, 200, 255),
                         self._game_window.screen,
                     )
 
@@ -227,7 +235,7 @@ class Client(SocketClient):
 
             	self._game_window.blit(surf, rect)
                 button(
-                    680, 200, 260, 50,
+                    680, 345, 260, 50,
                     'Leave Room',
                     (230, 153, 255), (204, 153, 255),
                     self._game_window.screen,

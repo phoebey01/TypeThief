@@ -31,12 +31,6 @@ class RoomControl(Room):
         self._delete_queue(player_id)
         super(RoomControl, self).remove_player(player_id)
 
-    def has_player(self):
-        if len(self._player_queues) > 0:
-            return True
-        else:
-            return False
-
     def add_event(self, player_id, timestamp, event_type, event_body):
         # will raise KeyError if queue doesnt exist
         q, lock = self._player_queues[player_id]
