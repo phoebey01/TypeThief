@@ -72,7 +72,8 @@ class Client(SocketClient):
         self._state = 'in_room' # todo: fix if unsuccessful room join
 
     def _leave_room(self):
-        self._send_leave_room()
+        if self.room:
+            self._send_leave_room()
         self._state = 'menu'
 
     def _draw_room_menu(self, rooms):
@@ -156,7 +157,7 @@ class Client(SocketClient):
             self._draw_room_menu(open_rooms)
 
             button(
-                680, 350, 260, 50,
+                680, 340, 260, 50,
                 'New Room',
                 (0, 255, 0), (50, 205, 50),
                 self._game_window.screen,
@@ -178,7 +179,7 @@ class Client(SocketClient):
                         self._send_play,
                     )
                     button(
-                        680, 200, 260, 50,
+                        680, 340, 260, 50,
                         'Leave Room',
                         (230, 153, 255), (204, 153, 255),
                         self._game_window.screen,
@@ -204,7 +205,7 @@ class Client(SocketClient):
 
             	self._game_window.blit(surf, rect)
                 button(
-                    680, 200, 260, 50,
+                    680, 340, 260, 50,
                     'Leave Room',
                     (230, 153, 255), (204, 153, 255),
                     self._game_window.screen,

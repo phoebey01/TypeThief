@@ -10,6 +10,8 @@ BASEDIR = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     DEBUG = False
     TESTING = False
+    SERVER_HOST = '0.0.0.0'
+    SERVER_PORT = 5000
 
 
 class ProductionConfig(Config):
@@ -24,14 +26,10 @@ class StagingConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
-    SERVER_ADDRESS = '127.0.0.1'
-    SERVER_PORT = 5000
 
 
 class TestingConfig(Config):
     TESTING = True
-    SERVER_ADDRESS = '127.0.0.1'
-    SERVER_PORT = 5000
 
 
 CONFIGS = {

@@ -45,4 +45,5 @@ class GameWindow(object):
 
     def draw(self):
         self._time.tick(self._fps)
+        pygame.event.pump()
         pygame.display.update()

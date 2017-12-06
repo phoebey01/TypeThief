@@ -139,10 +139,14 @@ class Server(object):
     This includes the flask app, socket app, views, and event handlers.
     """
     # todo: factor in address and port
-    def __init__(self):
+    def __init__(self, config, host=None, port=None):
         self._app = Flask(__name__)
+        self._app.config.from_object(config)
+        self._host = config.SERVER_HOST if not host else host
+        self._port = config.SERVER_PORT if not port else port
+
         self._socketio = SocketIO(self._app)
         self._socketio.on_namespace(_ServerNamespace('/play'))
 
     def run(self):
-        self._socketio.run(self._app, host='0.0.0.0', port=6000)
+        self._socketio.run(self._app, host=self._host, port=self._port)
