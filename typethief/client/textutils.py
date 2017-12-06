@@ -1,6 +1,7 @@
 # typethief/client/textutils.py
 
 import pygame
+import os
 
 
 def render_text(x, y, text, font, color=(0, 0, 0), background=None):
@@ -14,7 +15,9 @@ def render_text(x, y, text, font, color=(0, 0, 0), background=None):
 def rect_text(x, y, w, h, text, bg_color, screen):
     dims = x, y, w, h
     pygame.draw.rect(screen, bg_color, dims)
-    font = pygame.font.SysFont('arial', 18)
+    #font = pygame.font.SysFont('arial', 18)
+    path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
+    font = pygame.font.Font(path, 18)
     tw, th = font.size(text)
     surf, rect = render_text(x + (w - tw)/2, y + (h - th)/2, text, font)
     screen.blit(surf, rect)

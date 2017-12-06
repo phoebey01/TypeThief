@@ -2,6 +2,7 @@
 
 import threading
 import time
+import os
 
 import pygame
 from .button import button
@@ -36,6 +37,8 @@ class Client(SocketClient):
         text = text_obj.text
         if text_obj.next_pos is not None:
             claimed = [text_obj.get_char(i) for i in range(text_obj.next_pos)]
+        else: 
+            claimed = []
         lines = wrap_text(text, font, w)
 
         # draw lines before next_line
@@ -140,6 +143,13 @@ class Client(SocketClient):
                 py += font_hgt
             i += 1
 
+    def _draw_logo(self):
+        asurf = pygame.image.load(os.path.join(os.getcwd(),'ui/img/logo6.png'))
+        asurf = pygame.transform.scale(asurf, (300, 300))
+        arect = asurf.get_rect()
+        arect.center = (300,240)
+        self._game_window.blit(asurf, arect)
+
     def _draw(self):
         button(
             680, 410, 260, 50,
@@ -162,10 +172,19 @@ class Client(SocketClient):
                 self._game_window.screen,
                 self._choose_room,
             )
+
+            self._draw_logo()
+            
             
         elif self._state == 'in_room':
             if self.room and self.room.state != 'finished':
                 font = pygame.font.SysFont('arial', 20)
+                # mac font adjustment
+                w, h = pygame.display.get_surface().get_size()
+                if w == 960 and h == 480:
+                    path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
+                    font = pygame.font.Font(path, 25)
+
                 self._draw_text(20, 20, 600, font)
                 self._draw_player_panel()
 
@@ -193,14 +212,18 @@ class Client(SocketClient):
                     )
 
             elif self.room and self.room.state == 'finished':
-            	font = pygame.font.SysFont('arial', 20)
+            	#font = pygame.font.SysFont('arial', 70)
+                path = os.path.join(os.getcwd(), 'ui/fonts/win.otf')
+                font = pygame.font.Font(path, 60)
+                winner_color = (255, 128, 0) # orange
+                loser_color = (191, 255, 0) # light green
 
             	winner_id = self.room.winner.id
 
-            	if winner_id == self.player_id:
-	                surf, rect = render_text(50, 50, 'You win!', font)
+                if winner_id == self.player_id:
+                    surf, rect = render_text(200, 200, 'YOU WIN!', font, winner_color)
                 else:
-                	surf, rect = render_text(50, 50, 'You lose!', font)
+                	surf, rect = render_text(200, 200, 'YOU LOSE!', font, loser_color)
 
             	self._game_window.blit(surf, rect)
                 button(
