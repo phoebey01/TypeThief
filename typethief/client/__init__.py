@@ -220,7 +220,7 @@ class Client(SocketClient):
             elif self.room and self.room.state == 'finished':
                 path = os.path.join(os.getcwd(), 'ui/fonts/win.otf')
                 font = pygame.font.Font(path, 60)
-                color = (255, 128, 0) if self.room.winner_id == self.player_id else (191, 255, 0)
+                color = (255, 128, 0) if self.room.winner.id == self.player_id else (191, 255, 0)
                 result_msg = 'YOU WIN!' if self.room.winner.id == self.player_id else 'YOU LOSE!'
                 surf, rect = render_text(200, 200, result_msg, font, color)
                 self._game_window.blit(surf, rect)
