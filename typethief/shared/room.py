@@ -1,7 +1,6 @@
 # typethief/shared/room.py
 
 import threading
-from collections import defaultdict
 
 import pygame
 from .clock import Clock
@@ -24,7 +23,8 @@ class Room(object):
             return
 
         self._text = Text()
-        self._players = defaultdict(lambda: None)
+        # self._players = defaultdict(lambda: None)
+        self._players = {}
         self._room_id = Room._new_room_id()
         self._clock = Clock()
         self._state = 'waiting'
@@ -41,10 +41,7 @@ class Room(object):
 
     def decode(self, encoded):
         self._text = Text(encoded=encoded['text'])
-        self._players = defaultdict(
-            lambda: None,
-            {k: Player(encoded=v) for k, v in encoded['players'].items()},
-        )
+        self._players = {k: Player(encoded=v) for k, v in encoded['players'].items()}
         self._room_id = encoded['id']
         self._clock = Clock(epoch=encoded['time'])
         self._state = encoded['state']
@@ -64,7 +61,9 @@ class Room(object):
     @property
     def state(self):
         # if there is no next char, then finished
-        return self._state if self._text.next_char else 'finished'
+        if not self._text.next_char:
+            self._state = 'finished'
+        return self._state
 
     @property
     def size(self):
@@ -76,7 +75,10 @@ class Room(object):
 
     @property
     def winner(self):
-        players = self._players.values()
+        if self._state != 'finished':
+            return None
+
+        players = list(self._players.values())
         winner = players[0]
         for p in players:
             if p and p.score > winner.score:
@@ -99,6 +101,8 @@ class Room(object):
         return len(self._players) == 0
 
     def get_player(self, player_id):
+        if player_id not in self._players:
+            return None
         return self._players[player_id]
 
     def add_player(self, player):

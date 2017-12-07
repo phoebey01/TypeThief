@@ -10,6 +10,7 @@ BASEDIR = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     DEBUG = False
     TESTING = False
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
     SERVER_HOST = '0.0.0.0'
     SERVER_PORT = 5000
 

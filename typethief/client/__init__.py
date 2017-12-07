@@ -5,6 +5,8 @@ import time
 
 import pygame
 from .button import button
+from .button import Button
+from .button import ButtonGroup
 from .gamewindow import GameWindow
 from .textutils import to_char
 from .textutils import rect_text
@@ -25,8 +27,46 @@ class Client(SocketClient):
         self._game_window = GameWindow()
         self._state = 'menu' # menu, waiting, playing
 
+        # buttons
+        self._quit_btn = Button(
+            680, 410, 260, 50,
+            'Quit',
+            (255, 0, 0), (220, 20, 60),
+            action=self._quit,
+        )
+        self._new_room_btn = Button(
+            680, 345, 260, 50,
+            'New Room',
+            (0, 255, 0), (50, 205, 50),
+            action=self._choose_room,
+        )
+        self._play_btn = Button(
+            680, 280, 260, 50,
+            'Play',
+            (0, 255, 0), (50, 205, 50),
+            action=self._send_play,
+        )
+        self._leave_room_btn = Button(
+            680, 345, 260, 50,
+            'Leave Room',
+            (230, 153, 255), (204, 153, 255),
+            action=self._leave_room,
+        )
+        self._btns = set([
+            self._quit_btn,
+            self._new_room_btn,
+            self._play_btn,
+            self._leave_room_btn,
+        ])
+
+        # room selector
+        self._rooms_group = ButtonGroup(
+            680, 70, 260, 260,
+            (95, 158, 160), (176, 224, 230),
+        )
+
     def _quit(self):
-    	self._leave_room()
+        self._leave_room()
         pygame.display.quit()
         pygame.quit()
         exit()
@@ -77,27 +117,20 @@ class Client(SocketClient):
         self._state = 'menu'
 
     def _draw_room_menu(self, rooms):
-        room_menu = self._game_window.screen.subsurface(
-            pygame.Rect((680, 30), (260, 250)),
-        )
-        room_menu.fill((176, 224, 230))
+        screen = self._game_window.screen
+        rect_text(680, 20, 260, 50, 'Get Room', (65, 105, 225), screen)
+        self._rooms_group.draw(screen)
 
-        rect_text(
-            0, 0, 260, 50,
-            'Get Room',
-            (65, 105, 225),
-            room_menu,
-        )
-        bottom = 50
-        for room in rooms:
-            button(
-                0, bottom, 260, 50,
-                str(room),
-                (95, 158, 160), (176, 224, 230),
-                room_menu,
-                lambda: self._choose_room(room_id=room)
+        dead_btns = [btn_id for btn_id in self._rooms_group if btn_id not in rooms]
+        for btn_id in dead_btns:
+            self._rooms_group.remove_button(btn_id)
+        new_btns = [rid for rid in rooms if rid not in self._rooms_group]
+        for btn_id in new_btns:
+            self._rooms_group.add_button(
+                str(btn_id),
+                action=lambda: self._choose_room(room_id=btn_id),
+                btn_id=btn_id,
             )
-            bottom += 50
 
     def _draw_player_panel(self):
         x, y = 680, 20
@@ -144,85 +177,42 @@ class Client(SocketClient):
             i += 1
 
     def _draw(self):
-        button(
-            680, 410, 260, 50,
-            'Quit',
-            (255, 0, 0), (220, 20, 60),
-            self._game_window.screen,
-            self._quit
-        )
+        screen = self._game_window.screen
+        pygame.draw.rect(screen, (0, 0, 0), (660, 0, 300, 480))
+        self._quit_btn.draw(screen)
+
+        # set btn states
+        self._rooms_group.enabled = not self.room
+        self._new_room_btn.enabled = not self.room
+        self._play_btn.enabled = self.room and self.room.state == 'waiting'
+        self._leave_room_btn.enabled = self.room and self.room.state != 'playing'
         
         if self._state == 'menu':
-
             self._send_get_rooms()
             open_rooms = self._get_open_rooms()
             self._draw_room_menu(open_rooms)
-
-            button(
-                680, 345, 260, 50,
-                'New Room',
-                (0, 255, 0), (50, 205, 50),
-                self._game_window.screen,
-                self._choose_room,
-            )
+            self._new_room_btn.draw(screen)
             
         elif self._state == 'in_room':
+            self._leave_room_btn.draw(screen)
+
             if self.room and self.room.state != 'finished':
                 font = pygame.font.SysFont('arial', 25)
                 self._draw_text(20, 20, 600, font)
                 self._draw_player_panel()
-
-                if self.room.state == 'waiting':
-                    button(
-                        680, 280, 260, 50,
-                        'Play',
-                        (0, 255, 0), (50, 205, 50),
-                        self._game_window.screen,
-                        self._send_play,
-                    )
-                    button(
-                        680, 345, 260, 50,
-                        'Leave Room',
-                        (230, 153, 255), (204, 153, 255),
-                        self._game_window.screen,
-                        self._leave_room,
-                    )
-                elif self.room.state == 'playing':
-                    button( # inactive button
-                        680, 280, 260, 50,
-                        'Playing',
-                        (144, 238, 144), (144, 238, 144),
-                        self._game_window.screen,
-                    )
-                    button( # inactive button
-                        680, 345, 260, 50,
-                        'Leave Room',
-                         (234, 200, 255), (234, 200, 255),
-                        self._game_window.screen,
-                    )
+                self._play_btn.draw(screen)
 
             elif self.room and self.room.state == 'finished':
-            	font = pygame.font.SysFont('arial', 20)
-
-            	winner_id = self.room.winner.id
-
-            	if winner_id == self.player_id:
-	                surf, rect = render_text(50, 50, 'You win!', font)
-                else:
-                	surf, rect = render_text(50, 50, 'You lose!', font)
-
-            	self._game_window.blit(surf, rect)
-                button(
-                    680, 345, 260, 50,
-                    'Leave Room',
-                    (230, 153, 255), (204, 153, 255),
-                    self._game_window.screen,
-                    self._leave_room,
-                )
+                font = pygame.font.SysFont('arial', 20)
+                winner_id = self.room.winner.id
+                result_msg = 'You win!' if self.room.winner.id == self.player_id else 'You lose!'
+                surf, rect = render_text(50, 50, result_msg, font)
+                self._game_window.blit(surf, rect)
                     
 
     def run(self):
         super(Client, self).run() # updates room
+        screen = self._game_window.screen
         running = True
         while running:
             try:
@@ -236,6 +226,20 @@ class Client(SocketClient):
                         k = to_char(event.key, shifted=bool(mods & pygame.KMOD_SHIFT))
                         if k:
                             self._send_input(k)
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            room_btn = self._rooms_group.which_over()
+                            if room_btn:
+                                self._rooms_group.on_click(room_btn)
+                            for btn in self._btns:
+                                if btn.is_over(screen):
+                                    btn.on_click()
+                        elif event.button == 4:
+                            if self._rooms_group.is_over(screen):
+                                self._rooms_group.on_scroll_up()
+                        elif event.button == 5:
+                            if self._rooms_group.is_over(screen):
+                                self._rooms_group.on_scroll_down()
 
                 if self.room:
                     self._send_null()

@@ -12,16 +12,19 @@ class RoomControl(Room):
     Rooms augmented with queues for each player
     """
     def __init__(self):
+        self._player_queues_lock = threading.Lock()
         self._player_queues = {}
         super(RoomControl, self).__init__()
 
     def _new_queue(self, player_id):
-        if player_id not in self._player_queues:
-            self._player_queues[player_id] = (EventQueue(), threading.Lock())
+        with self._player_queues_lock:
+            if player_id not in self._player_queues:
+                self._player_queues[player_id] = EventQueue()
 
     def _delete_queue(self, player_id):
-        if player_id in self._player_queues:
-            del self._player_queues[player_id]
+        with self._player_queues_lock:
+            if player_id in self._player_queues:
+                del self._player_queues[player_id]
 
     def add_player(self, player):
         super(RoomControl, self).add_player(player)
@@ -32,9 +35,8 @@ class RoomControl(Room):
         super(RoomControl, self).remove_player(player_id)
 
     def add_event(self, player_id, timestamp, event_type, event_body):
-        # will raise KeyError if queue doesnt exist
-        q, lock = self._player_queues[player_id]
-        with lock:
+        if player_id in self._player_queues: # must check since concurrent
+            q = self._player_queues[player_id]
             q.put_event(timestamp, (event_type, event_body))
 
     def _handle_event(self, player_id, event):
@@ -52,13 +54,17 @@ class RoomControl(Room):
 
     def execute(self):
         try:
-            gvt = min([q.peek_timestamp() for q, lock in self._player_queues.values()])
-        except Empty:
+            with self._player_queues_lock:
+                gvt = min([
+                    q.peek_timestamp()
+                    for q in self._player_queues.values()
+                ])
+        except:
             return []
 
         executable_events = []
-        for player_id, (q, lock) in self._player_queues.items():
-            with lock:
+        with self._player_queues_lock:
+            for player_id, q in self._player_queues.items():
                 while not q.empty() and q.peek_timestamp() == gvt:
                     executable_events.append((player_id, q.get_event()))
 

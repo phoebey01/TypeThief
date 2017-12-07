@@ -43,7 +43,7 @@ class Player(object):
             self._score += char.val
 
     def _random_color(self):
-        return (random.randint(0,255), random.randint(0,255), random.randint(0,255)) 
+        return tuple(random.randint(100, 255) for _ in xrange(3))
 
     @property
     def score(self):

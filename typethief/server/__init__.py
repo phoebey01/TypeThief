@@ -15,6 +15,11 @@ from .roomcontrol import RoomControl
 from typethief.shared.player import Player
 
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
+
 class _ServerNamespace(Namespace):
     def __init__(self, *args, **kwargs):
         self._rooms = {} # room_id: room
@@ -24,7 +29,7 @@ class _ServerNamespace(Namespace):
         emit('error', {'error': message})
 
     def on_connect(self):
-        print('[Client connected]')
+        pass
 
     def on_disconnect(self):
         player_id = request.sid
@@ -35,13 +40,12 @@ class _ServerNamespace(Namespace):
                 break
 
         if room:
+            room.remove_player(player_id)
             room_alert = {'player_id': player_id}
             if room.empty():
                 del self._rooms[room.id]
             else:
-                emit('player_quit', room_response, room=room.id)
-
-        # print('[Client disconnected]')
+                emit('player_quit', room_alert, room=room.id)
 
     def _join_room(self, room=None):
         """
@@ -56,26 +60,33 @@ class _ServerNamespace(Namespace):
         join_room(new_player.id) # allow messaging specific client
         return room, new_player
 
+    def _add_event(self, room_id, *args):
+        if room_id in self._rooms:
+            self._rooms[room_id].add_event(*args)
+
+    def _handle_events(self, room, emit_fun):
+        while room.id in self._rooms:
+            for player_id, (event_type, event_body) in room.execute():
+                response = {'player_id': player_id}
+
+                if event_type == 'claim':
+                    response['pos'] = event_body['pos']
+                elif event_type == 'play':
+                    response = {}
+
+                emit_fun(event_type, response, room.id)
+
     def on_new_room(self, message):
         # message = {}
         new_room, new_player = self._join_room()
 
         @copy_current_request_context
-        def handle_events(room):
-            while room.id in self._rooms:
-                for player_id, (event_type, event_body) in room.execute():
-                    response = {'player_id': player_id}
-
-                    if event_type == 'claim':
-                        response['pos'] = event_body['pos']
-                    elif event_type == 'play':
-                        response = {}
-
-                    emit(event_type, response, room=room.id, namespace=self.namespace)
+        def emit_with_context(event_type, response, room_id):
+            emit(event_type, response, room=room_id, namespace=self.namespace)
 
         # improve performance 
-        for i in xrange(5):
-            t = threading.Thread(target=handle_events, args=(new_room,))
+        for i in xrange(3):
+            t = threading.Thread(target=self._handle_events, args=(new_room, emit_with_context))
             t.daemon = True
             t.start()
 
@@ -98,7 +109,8 @@ class _ServerNamespace(Namespace):
 
     def on_input(self, message):
         # message = {'player_id':, 'room_id':, 'timestamp':, 'key':,}
-        self._rooms[message['room_id']].add_event(
+        self._add_event(
+            message['room_id'],
             message['player_id'],
             message['timestamp'],
             'input',
@@ -107,7 +119,8 @@ class _ServerNamespace(Namespace):
 
     def on_play(self, message):
         # message = {'player_id':, 'room_id':, 'timestamp':,}
-        self._rooms[message['room_id']].add_event(
+        self._add_event(
+            message['room_id'],
             message['player_id'],
             message['timestamp'],
             'play',
@@ -125,7 +138,8 @@ class _ServerNamespace(Namespace):
         emit('get_rooms_response', response)
 
     def on_null(self, message):
-        self._rooms[message['room_id']].add_event(
+        self._add_event(
+            message['room_id'],
             message['player_id'],
             message['timestamp'],
             'null',
@@ -135,7 +149,6 @@ class _ServerNamespace(Namespace):
     def on_leave_room(self, message):
         room = self._rooms[message['room_id']]
         room.remove_player(message['player_id'])
-
         room_response = {'player_id': message['player_id']}
         emit('leave_room_response', room_response)
         
@@ -143,7 +156,6 @@ class _ServerNamespace(Namespace):
             del self._rooms[message['room_id']]
         else:
             emit('player_quit', room_response, room=room.id)
-
 
 
 class Server(object):
