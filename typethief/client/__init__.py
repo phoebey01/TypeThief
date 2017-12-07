@@ -2,9 +2,9 @@
 
 import threading
 import time
+import os
 
 import pygame
-from .button import button
 from .button import Button
 from .button import ButtonGroup
 from .gamewindow import GameWindow
@@ -76,6 +76,8 @@ class Client(SocketClient):
         text = text_obj.text
         if text_obj.next_pos is not None:
             claimed = [text_obj.get_char(i) for i in range(text_obj.next_pos)]
+        else: 
+            claimed = []
         lines = wrap_text(text, font, w)
 
         # draw lines before next_line
@@ -176,6 +178,13 @@ class Client(SocketClient):
                 py += font_hgt
             i += 1
 
+    def _draw_logo(self):
+        asurf = pygame.image.load(os.path.join(os.getcwd(),'ui/img/logo6.png'))
+        asurf = pygame.transform.scale(asurf, (300, 300))
+        arect = asurf.get_rect()
+        arect.center = (300,240)
+        self._game_window.blit(asurf, arect)
+
     def _draw(self):
         screen = self._game_window.screen
         pygame.draw.rect(screen, (0, 0, 0), (660, 0, 300, 480))
@@ -192,21 +201,28 @@ class Client(SocketClient):
             open_rooms = self._get_open_rooms()
             self._draw_room_menu(open_rooms)
             self._new_room_btn.draw(screen)
+            self._draw_logo()
             
         elif self._state == 'in_room':
             self._leave_room_btn.draw(screen)
 
             if self.room and self.room.state != 'finished':
-                font = pygame.font.SysFont('arial', 25)
+                font = pygame.font.SysFont('arial', 20)
+                # mac font adjustment
+                w, h = pygame.display.get_surface().get_size()
+                if w == 960 and h == 480:
+                    path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
+                    font = pygame.font.Font(path, 25)
                 self._draw_text(20, 20, 600, font)
                 self._draw_player_panel()
                 self._play_btn.draw(screen)
 
             elif self.room and self.room.state == 'finished':
-                font = pygame.font.SysFont('arial', 20)
-                winner_id = self.room.winner.id
-                result_msg = 'You win!' if self.room.winner.id == self.player_id else 'You lose!'
-                surf, rect = render_text(50, 50, result_msg, font)
+                path = os.path.join(os.getcwd(), 'ui/fonts/win.otf')
+                font = pygame.font.Font(path, 60)
+                color = (255, 128, 0) if self.room.winner_id == self.player_id else (191, 255, 0)
+                result_msg = 'YOU WIN!' if self.room.winner.id == self.player_id else 'YOU LOSE!'
+                surf, rect = render_text(200, 200, result_msg, font, color)
                 self._game_window.blit(surf, rect)
                     
 

@@ -15,11 +15,6 @@ from .roomcontrol import RoomControl
 from typethief.shared.player import Player
 
 
-import logging
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-
-
 class _ServerNamespace(Namespace):
     def __init__(self, *args, **kwargs):
         self._rooms = {} # room_id: room

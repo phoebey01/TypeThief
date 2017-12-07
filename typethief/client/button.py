@@ -1,29 +1,10 @@
 # typethief/client/button.py
 
+import os
 from collections import OrderedDict
 
 import pygame
 from .textutils import render_text
-
-
-def button(x, y, w, h, text, on_color, off_color, screen, action=None):
-    dims = x, y, w, h
-    mx, my = pygame.mouse.get_pos()
-    ox, oy = screen.get_abs_offset()
-
-    if x < mx - ox < x + w and y < my - oy < y + h:
-        pygame.draw.rect(screen, on_color, dims)
-        for e in pygame.event.get(pygame.MOUSEBUTTONDOWN):
-            if e.button == 1 and action:
-                action()
-            pygame.event.post(e)
-    else:
-        pygame.draw.rect(screen, off_color, dims)
-
-    font = pygame.font.SysFont('arial', 18)
-    tw, th = font.size(text)
-    surf, rect = render_text(x + (w - tw)/2, y + (h - th)/2, text, font)
-    screen.blit(surf, rect)
 
 
 class Button(object):
@@ -38,11 +19,13 @@ class Button(object):
         self._pos = x, y
         self._size = w, h
         self._text = text
-        self._font = font if font else pygame.font.SysFont('arial', 18)
         self._on = on_color
         self._off = off_color
         self._action = action
         self._enabled = True
+
+        path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
+        self._font = font if font else pygame.font.Font(path, 18)
 
     @property
     def pos(self):
@@ -102,10 +85,12 @@ class ButtonGroup(object):
     def __init__(self, x, y, w, h, on_color, off_color, font=None):
         self._pos = x, y
         self._size = w, h
-        self._font = font if font else pygame.font.SysFont('arial', 18)
         self._on = on_color
         self._off = off_color
         self._enabled = True
+
+        path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
+        self._font = font if font else pygame.font.Font(path, 18)
 
         self._surf = None # set by draw
         self._next_btn = 0

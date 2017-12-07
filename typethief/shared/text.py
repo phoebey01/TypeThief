@@ -159,7 +159,7 @@ class Text(object):
                     json.dump(cls._cached_texts, f)
 
         text_id, text = random.choice(cls._cached_texts.items())
-        return text_id, text
+        return text_id, re.sub(r'\s', r' ', text)
 
     @staticmethod
     def _make_characters(text):
