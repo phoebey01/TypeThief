@@ -28,6 +28,9 @@ class Room(object):
         self._room_id = Room._new_room_id()
         self._clock = Clock()
         self._state = 'waiting'
+        self._winner = None
+
+
 
     def encode(self):
         encoded_players = {k: v.encode() for k, v in self._players.items()}
@@ -37,6 +40,7 @@ class Room(object):
             'id': self._room_id,
             'time': self._clock.epoch,
             'state': self._state,
+            'winner': self._winner
         }
 
     def decode(self, encoded):
@@ -45,6 +49,7 @@ class Room(object):
         self._room_id = encoded['id']
         self._clock = Clock(epoch=encoded['time'])
         self._state = encoded['state']
+        self._winner = None
 
     @property
     def text(self):
@@ -77,13 +82,21 @@ class Room(object):
     def winner(self):
         if self._state != 'finished':
             return None
+        else:
+            if self._winner:
+                return self._winner
+            else:
+                return None
 
-        players = list(self._players.values())
-        winner = players[0]
-        for p in players:
-            if p and p.score > winner.score:
-                winner = p
-        return winner
+    def compute_winner(self):
+        if not self._winner:
+            if self._state == 'finished':
+                players = list(self._players.values())
+                winner = players[0]
+                for p in players:
+                    if p and p.score > winner.score:
+                        winner = p
+                self._winner = winner
 
     @state.setter
     def state(self, new_state):
