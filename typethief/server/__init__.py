@@ -14,6 +14,10 @@ from flask_socketio import SocketIO
 from .roomcontrol import RoomControl
 from typethief.shared.player import Player
 
+import logging
+logger = logging.getLogger('werkzeug')
+logger.setLevel(logging.ERROR)
+
 
 class _ServerNamespace(Namespace):
     def __init__(self, *args, **kwargs):
@@ -142,15 +146,18 @@ class _ServerNamespace(Namespace):
         )
 
     def on_leave_room(self, message):
-        room = self._rooms[message['room_id']]
-        room.remove_player(message['player_id'])
         room_response = {'player_id': message['player_id']}
         emit('leave_room_response', room_response)
-        
-        if room.empty():
-            del self._rooms[message['room_id']]
-        else:
-            emit('player_quit', room_response, room=room.id)
+
+        room_id = message['room_id']
+        if room_id in self._rooms:
+            room = self._rooms[room_id]
+            room.remove_player(message['player_id'])
+            
+            if room.empty():
+                del self._rooms[message['room_id']]
+            else:
+                emit('player_quit', room_response, room=room_id)
 
 
 class Server(object):

@@ -35,13 +35,13 @@ class RoomControl(Room):
         super(RoomControl, self).remove_player(player_id)
 
     def add_event(self, player_id, timestamp, event_type, event_body):
-        if player_id in self._player_queues: # must check since concurrent
-            q = self._player_queues[player_id]
-            q.put_event(timestamp, (event_type, event_body))
+        with self._player_queues_lock:
+            if player_id in self._player_queues: # must check since concurrent
+                q = self._player_queues[player_id]
+                q.put_event(timestamp, (event_type, event_body))
 
     def _handle_event(self, player_id, event):
         event_type, event_body = event
-
         if self._state == 'playing' and event_type == 'input':
             pos = self._text.claim_next(self._players[player_id], event_body['key'])
             if pos != None:
@@ -53,20 +53,19 @@ class RoomControl(Room):
         return None
 
     def execute(self):
+        gvt, qs = None, []
         try:
             with self._player_queues_lock:
-                gvt = min([
-                    q.peek_timestamp()
-                    for q in self._player_queues.values()
-                ])
-        except:
+                for player_id, q in self._player_queues.items():
+                    timestamp = q.peek_timestamp()
+                    if not gvt or timestamp < gvt:
+                        gvt = timestamp
+                        qs = [(player_id, q)]
+                    elif timestamp == gvt:
+                        qs.append((player_id, q))
+                executable_events = [(pid, q.get_event()) for pid, q in qs]
+        except Exception as e:
             return []
-
-        executable_events = []
-        with self._player_queues_lock:
-            for player_id, q in self._player_queues.items():
-                while not q.empty() and q.peek_timestamp() == gvt:
-                    executable_events.append((player_id, q.get_event()))
 
         executed_events = []
         for player_id, e in executable_events:
