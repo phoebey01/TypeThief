@@ -258,8 +258,8 @@ class Client(SocketClient):
                             if self._rooms_group.is_over(screen):
                                 self._rooms_group.on_scroll_down()
 
-                if self.room:
-                    self._send_null()
+                # if self.room:
+                #     self._send_null()
 
                 self._draw()
                 self._game_window.draw()
