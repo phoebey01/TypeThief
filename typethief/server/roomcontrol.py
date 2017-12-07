@@ -13,7 +13,7 @@ class RoomControl(Room):
     """
     def __init__(self):
         self._player_queues_lock = threading.Lock()
-        self._player_queues = {}
+        self._player_queues = {} # player_id: queue
         super(RoomControl, self).__init__()
 
     def _new_queue(self, player_id):

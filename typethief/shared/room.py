@@ -23,7 +23,6 @@ class Room(object):
             return
 
         self._text = Text()
-        # self._players = defaultdict(lambda: None)
         self._players = {}
         self._room_id = Room._new_room_id()
         self._clock = Clock()

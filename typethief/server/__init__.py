@@ -16,7 +16,7 @@ from typethief.shared.player import Player
 
 import logging
 logger = logging.getLogger('werkzeug')
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.NOTSET)
 
 
 class _ServerNamespace(Namespace):
@@ -41,6 +41,8 @@ class _ServerNamespace(Namespace):
         if room:
             room.remove_player(player_id)
             room_alert = {'player_id': player_id}
+            leave_room(room_id)
+
             if room.empty():
                 del self._rooms[room.id]
             else:
@@ -153,6 +155,7 @@ class _ServerNamespace(Namespace):
         if room_id in self._rooms:
             room = self._rooms[room_id]
             room.remove_player(message['player_id'])
+            leave_room(room_id)
             
             if room.empty():
                 del self._rooms[message['room_id']]

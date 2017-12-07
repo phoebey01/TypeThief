@@ -120,7 +120,7 @@ class Client(SocketClient):
 
     def _draw_room_menu(self, rooms):
         screen = self._game_window.screen
-        rect_text(680, 20, 260, 50, 'Get Room', (65, 105, 225), screen)
+        rect_text(680, 20, 260, 50, 'Open Rooms', (65, 105, 225), screen)
         self._rooms_group.draw(screen)
 
         dead_btns = [btn_id for btn_id in self._rooms_group if btn_id not in rooms]
@@ -257,9 +257,6 @@ class Client(SocketClient):
                         elif event.button == 5:
                             if self._rooms_group.is_over(screen):
                                 self._rooms_group.on_scroll_down()
-
-                # if self.room:
-                #     self._send_null()
 
                 self._draw()
                 self._game_window.draw()
