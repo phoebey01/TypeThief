@@ -13,7 +13,7 @@ class RoomControl(Room):
     """
     def __init__(self):
         self._player_queues_lock = threading.Lock()
-        self._player_queues = {}
+        self._player_queues = {} # player_id: queue
         super(RoomControl, self).__init__()
 
     def _new_queue(self, player_id):
@@ -58,6 +58,8 @@ class RoomControl(Room):
         try:
             with self._player_queues_lock:
                 for player_id, q in self._player_queues.items():
+                    if q.empty():
+                        continue
                     timestamp = q.peek_timestamp()
                     if not gvt or timestamp < gvt:
                         gvt = timestamp
@@ -65,7 +67,7 @@ class RoomControl(Room):
                     elif timestamp == gvt:
                         qs.append((player_id, q))
                 executable_events = [(pid, q.get_event()) for pid, q in qs]
-        except Exception as e:
+        except KeyError as e:
             return []
 
         executed_events = []
