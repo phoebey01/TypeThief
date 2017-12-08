@@ -95,7 +95,8 @@ class SocketClient(object):
         self._socketio = SocketIO(address, port)
         self._namespace = self._socketio.define(_ClientNamespace, namespace)
 
-        self._receive_events_thread = threading.Thread(target=self._socketio.wait)
+        self._receive_events_thread = threading.Thread(
+            target=self._socketio.wait)
         self._receive_events_thread.daemon = True
 
     @property

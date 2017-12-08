@@ -10,7 +10,8 @@ import threading
 from bs4 import BeautifulSoup
 
 
-_TYPERACER_TEXTS_URL = 'http://www.typeracerdata.com/texts?texts=full&sort=relative_average'
+_TYPERACER_TEXTS_URL = 'http://www.typeracerdata.com/texts?\
+                        texts=full&sort=relative_average'
 _TEXTS_FNAME = 'typethief/shared/texts.txt'
 
 
@@ -80,7 +81,8 @@ class Text(object):
 
     def __init__(self, text=None, encoded=None):
         """
-        text [str]: base string that the text represents, will be generated if none provided
+        text [str]: base string that the text represents, 
+        will be generated if none provided
         encoded [dict]: encoded text; will override others if provided
         """
         self._claim_mutex = threading.Lock()

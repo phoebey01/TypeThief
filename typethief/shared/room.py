@@ -45,7 +45,8 @@ class Room(object):
 
     def decode(self, encoded):
         self._text = Text(encoded=encoded['text'])
-        self._players = {k: Player(encoded=v) for k, v in encoded['players'].items()}
+        self._players = {k: Player(encoded=v) for k, v in \
+                            encoded['players'].items()}
         self._room_id = encoded['id']
         self._clock = Clock(epoch=encoded['time'])
         self._state = encoded['state']

@@ -43,7 +43,8 @@ class RoomControl(Room):
     def _handle_event(self, player_id, event):
         event_type, event_body = event
         if self._state == 'playing' and event_type == 'input':
-            pos = self._text.claim_next(self._players[player_id], event_body['key'])
+            pos = self._text.claim_next(
+                self._players[player_id], event_body['key'])
             if pos != None:
                 return player_id, ('claim', {'pos': pos})
         elif self._state == 'waiting' and event_type == 'play':

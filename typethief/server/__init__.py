@@ -85,7 +85,8 @@ class _ServerNamespace(Namespace):
 
         # improve performance 
         for i in xrange(3):
-            t = threading.Thread(target=self._handle_events, args=(new_room, emit_with_context))
+            t = threading.Thread(target=self._handle_events, 
+                args=(new_room, emit_with_context))
             t.daemon = True
             t.start()
 

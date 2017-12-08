@@ -64,7 +64,8 @@ class Button(object):
         pygame.draw.rect(screen, color, self._pos + self._size)
 
         tw, th = self._font.size(self._text)
-        s, r = render_text(x + (w - tw)/2, y + (h - th)/2, self._text, self._font)
+        s, r = render_text(x + (w - tw)/2, y + (h - th)/2, 
+                            self._text, self._font)
         screen.blit(s, r)
 
     def is_over(self, screen):

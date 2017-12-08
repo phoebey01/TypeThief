@@ -123,7 +123,8 @@ class Client(SocketClient):
         rect_text(680, 20, 260, 50, 'Get Room', (65, 105, 225), screen)
         self._rooms_group.draw(screen)
 
-        dead_btns = [btn_id for btn_id in self._rooms_group if btn_id not in rooms]
+        dead_btns = [btn_id for btn_id in self._rooms_group \
+                                if btn_id not in rooms]
         for btn_id in dead_btns:
             self._rooms_group.remove_button(btn_id)
         new_btns = [rid for rid in rooms if rid not in self._rooms_group]
@@ -158,7 +159,8 @@ class Client(SocketClient):
                 color,
                 (lrect.right, y, lrect.height, lrect.height),
             )
-            rsurf, rrect = render_text(mrect.right, y, ': {}'.format(score), font)
+            rsurf, rrect = render_text(mrect.right, y, 
+                                        ': {}'.format(score), font)
             self._game_window.blit(rsurf, rrect)
 
         px, py = x + 10, y + 40
@@ -194,7 +196,8 @@ class Client(SocketClient):
         self._rooms_group.enabled = not self.room
         self._new_room_btn.enabled = not self.room
         self._play_btn.enabled = self.room and self.room.state == 'waiting'
-        self._leave_room_btn.enabled = self.room and self.room.state != 'playing'
+        self._leave_room_btn.enabled = self.room and \
+                                        self.room.state != 'playing'
         
         if self._state == 'menu':
             self._send_get_rooms()
@@ -221,8 +224,10 @@ class Client(SocketClient):
                 path = os.path.join(os.getcwd(), 'ui/fonts/win.otf')
                 font = pygame.font.Font(path, 60)
                 self.room.compute_winner()
-                color = (255, 128, 0) if self.room.winner.id == self.player_id else (191, 255, 0)
-                result_msg = 'YOU WIN!' if self.room.winner.id == self.player_id else 'YOU LOSE!'
+                color = (255, 128, 0) \
+                    if self.room.winner.id == self.player_id else (191, 255, 0)
+                result_msg = 'YOU WIN!' \
+                    if self.room.winner.id == self.player_id else 'YOU LOSE!'
                 surf, rect = render_text(200, 200, result_msg, font, color)
                 self._game_window.blit(surf, rect)
                     
@@ -240,7 +245,8 @@ class Client(SocketClient):
                     if event.type == pygame.QUIT:
                         running = False
                     elif event.type == pygame.KEYDOWN:
-                        k = to_char(event.key, shifted=bool(mods & pygame.KMOD_SHIFT))
+                        k = to_char(event.key, \
+                            shifted=bool(mods & pygame.KMOD_SHIFT))
                         if k:
                             self._send_input(k)
                     elif event.type == pygame.MOUSEBUTTONDOWN:
