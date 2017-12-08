@@ -42,6 +42,7 @@ class _ServerNamespace(Namespace):
             room.remove_player(player_id)
             room_alert = {'player_id': player_id}
             leave_room(room_id)
+            leave_room(player_id)
 
             if room.empty():
                 del self._rooms[room.id]
@@ -50,7 +51,8 @@ class _ServerNamespace(Namespace):
 
     def _join_room(self, room=None):
         """
-        This function must be called in a request context
+        This function must be called in a request context so join_room does not
+            fail
         """
         if not room:
             room = RoomControl()
@@ -66,6 +68,15 @@ class _ServerNamespace(Namespace):
             self._rooms[room_id].add_event(*args)
 
     def _handle_events(self, room, emit_fun):
+        """
+        Executes room events in a cycle
+        Emits response back to clients depending on which events were processed
+
+        Params:
+        room [Room]: room for which this fun is handling events for
+        emit_fun [fn]: function to emit response back to client; must be passed
+            since it requires a request context, and this fun doesnt have one
+        """
         while room.id in self._rooms:
             for player_id, (event_type, event_body) in room.execute():
                 response = {'player_id': player_id}
@@ -149,7 +160,8 @@ class _ServerNamespace(Namespace):
         )
 
     def on_leave_room(self, message):
-        room_response = {'player_id': message['player_id']}
+        player_id = message['player_id']
+        room_response = {'player_id': player_id}
         emit('leave_room_response', room_response)
 
         room_id = message['room_id']
@@ -157,6 +169,7 @@ class _ServerNamespace(Namespace):
             room = self._rooms[room_id]
             room.remove_player(message['player_id'])
             leave_room(room_id)
+            leave_room(player_id)
             
             if room.empty():
                 del self._rooms[message['room_id']]
@@ -169,7 +182,6 @@ class Server(object):
     Server represents the game server, and encapsulates everythong about it.
     This includes the flask app, socket app, views, and event handlers.
     """
-    # todo: factor in address and port
     def __init__(self, config, host=None, port=None):
         self._app = Flask(__name__)
         self._app.config.from_object(config)

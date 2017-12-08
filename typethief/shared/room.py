@@ -10,7 +10,7 @@ from .text import Text
 
 class Room(object):
     """
-    Represents the state of a single game
+    Represents the state of a single game/room
     """
     STATES = set(['waiting', 'playing', 'finished'])
     _next_room = 0
@@ -28,7 +28,6 @@ class Room(object):
         self._clock = Clock()
         self._state = 'waiting'
         self._winner = None
-
 
 
     def encode(self):
@@ -70,42 +69,42 @@ class Room(object):
             self._state = 'finished'
         return self._state
 
-    @property
-    def size(self):
-        return len(self._players)
-
-    def __iter__(self):
-        for p in self._players.values():
-            yield p
-
-    @property
-    def winner(self):
-        if self._state != 'finished':
-            return None
-        else:
-            if self._winner:
-                return self._winner
-            else:
-                return None
-
-    def compute_winner(self):
-        if not self._winner:
-            if self._state == 'finished':
-                players = list(self._players.values())
-                winner = players[0]
-                for p in players:
-                    if p and p.score > winner.score:
-                        winner = p
-                self._winner = winner
-
     @state.setter
     def state(self, new_state):
         if new_state not in Room.STATES:
             raise Exception('{} is not a valid state'.format(new_state))
         self._state = new_state
 
+    @property
+    def size(self):
+        return len(self._players)
+
+    @property
+    def winner(self):
+        if self._state != 'finished':
+            return None
+        else:
+            self.compute_winner()
+            return self._winner if self._winner else None
+
+    def __iter__(self):
+        for p in self._players.values():
+            yield p
+
+    def compute_winner(self):
+        if not self._winner and self._state == 'finished':
+            players = list(self._players.values())
+            winner = players[0]
+            for p in players:
+                if p and p.score > winner.score:
+                    winner = p
+            self._winner = winner
+
     @classmethod
     def _new_room_id(cls):
+        """
+        Generate a new room id
+        """
         room_id = 'room' + str(cls._next_room)
         cls._next_room += 1
         return room_id

@@ -85,7 +85,7 @@ class Text(object):
         will be generated if none provided
         encoded [dict]: encoded text; will override others if provided
         """
-        self._claim_mutex = threading.Lock()
+        self._claim_mutex = threading.Lock() # only one may claim mwahaha
 
         if encoded:
             self.decode(encoded)
@@ -172,7 +172,10 @@ class Text(object):
         return characters
 
     def _claim_pos(self, player, pos):
-        pos_char = self._characters[pos] # can raise index
+        """
+        Have player claim the character at index pos
+        """
+        pos_char = self._characters[pos]
         if not pos_char.claimer:
             player.add_claimed(pos_char)
             pos_char.claimer = player.id

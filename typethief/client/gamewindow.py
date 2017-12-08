@@ -5,6 +5,7 @@ import pygame
 
 class GameWindow(object):
     """
+    Screen to draw pygame objects on
     """
     BG_COLOR = 255, 255, 255
 
@@ -38,12 +39,23 @@ class GameWindow(object):
         return self._screen
 
     def blit(self, *args, **kwargs):
+        """
+        Draw things onto the screen
+        """
         self._screen.blit(*args, **kwargs)
 
     def clear_screen(self):
+        """
+        Fill the screen with pure white pixels
+        Should be called at the beginning of every draw cycle
+        """
         self._screen.fill(GameWindow.BG_COLOR)
 
     def draw(self):
+        """
+        Draws any shapes blit'd to the screen by updating the pygame display
+        Should be called at the end of every draw cycle
+        """
         self._time.tick(self._fps)
         pygame.event.pump()
         pygame.display.update()

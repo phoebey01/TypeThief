@@ -52,8 +52,6 @@ class _ClientNamespace(BaseNamespace):
         self._player_id = response['player_id']
         self._room = Room(encoded=response['room'])
 
-        self._quit = False
-
     def on_claim(self, response):
         # response: {'player_id':, pos':,}
         player_id, pos = response['player_id'], response['pos']
@@ -62,7 +60,8 @@ class _ClientNamespace(BaseNamespace):
 
     def on_play(self, response):
         # response: {}
-        self._room.state = 'playing'
+        if self._room:
+            self._room.state = 'playing'
 
     def on_get_rooms_response(self, response):
         self._open_rooms = response['rooms']
@@ -90,6 +89,9 @@ class _ClientNamespace(BaseNamespace):
 
 class SocketClient(object):
     """
+    Network client
+    Contains methods to send specific events to the server
+    Responses are collected in the above _ClientNamespace
     """
     def __init__(self, address, port, namespace='/play'):
         self._socketio = SocketIO(address, port)

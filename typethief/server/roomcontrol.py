@@ -41,6 +41,16 @@ class RoomControl(Room):
                 q.put_event(timestamp, (event_type, event_body))
 
     def _handle_event(self, player_id, event):
+        """
+        Alters room state based on event
+
+        Params:
+        played_id [obj]: event producer
+        event [str, dict]: event type and body 
+
+        Returns [obj, (str, dict)]: a player_id and an event that needs to be
+            sent back to clients
+        """
         event_type, event_body = event
         if self._state == 'playing' and event_type == 'input':
             pos = self._text.claim_next(
@@ -54,6 +64,10 @@ class RoomControl(Room):
         return None
 
     def execute(self):
+        """
+        Executes the earliest events out of all event queues
+        """
+        # gvt = earliest timestamp, qs = queues to be dequeued
         gvt, qs = None, []
         try:
             with self._player_queues_lock:
@@ -70,7 +84,7 @@ class RoomControl(Room):
         except KeyError as e:
             return []
 
-        executed_events = []
+        executed_events = [] # save executed responses
         for player_id, e in executable_events:
             handled = self._handle_event(player_id, e)
             if handled:

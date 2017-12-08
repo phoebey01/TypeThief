@@ -71,7 +71,29 @@ class Client(SocketClient):
         pygame.quit()
         exit()
 
+    def _choose_room(self, room_id=None):
+        """
+        Join a selected room
+        """
+        if room_id:
+            self._send_join_room(room_id)
+        else:
+            self._send_new_room()
+        self._state = 'in_room'
+
+    def _leave_room(self):
+        """
+        Leave the player's current room, if there is one
+        """
+        if self.room:
+            self._send_leave_room()
+        self._state = 'menu'
+
     def _draw_text(self, x, y, w, font):
+        """
+        While in a game, draw the game's text, including colors to indicate
+        which characters were claimed by which players
+        """
         text_obj = self.room.text
         text = text_obj.text
         if text_obj.next_pos is not None:
@@ -106,18 +128,6 @@ class Client(SocketClient):
         for surf, rect in surfrects:
             self._game_window.blit(surf, rect)
 
-    def _choose_room(self, room_id=None):
-        if room_id:
-            self._send_join_room(room_id)
-        else:
-            self._send_new_room()
-        self._state = 'in_room' # todo: fix if unsuccessful room join
-
-    def _leave_room(self):
-        if self.room:
-            self._send_leave_room()
-        self._state = 'menu'
-
     def _draw_room_menu(self, rooms):
         screen = self._game_window.screen
         rect_text(680, 20, 260, 50, 'Open Rooms', (65, 105, 225), screen)
@@ -136,6 +146,11 @@ class Client(SocketClient):
             )
 
     def _draw_player_panel(self):
+        """
+        When in a room, draw a panel that includes all player ids and their
+            scores
+        """
+        # bg
         x, y = 680, 20
         pygame.draw.rect(
             self._game_window.screen, 
@@ -151,7 +166,8 @@ class Client(SocketClient):
 
         font_hgt = 12
         def draw_player_info(x, y, name, color, score):
-            font = pygame.font.SysFont('arial', font_hgt)
+            path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
+            font = pygame.font.Font(path, font_hgt)
             lsurf, lrect = render_text(x, y, name + ' ', font)
             self._game_window.blit(lsurf, lrect)
             mrect = pygame.draw.rect(
@@ -188,6 +204,11 @@ class Client(SocketClient):
         self._game_window.blit(asurf, arect)
 
     def _draw(self):
+        """
+        Depending on the client's state, draw the game window:
+        1. Menu: room selection button group, new room/quit buttons
+        2. In-room: game text, player panel, play/leave/quit buttons
+        """
         screen = self._game_window.screen
         pygame.draw.rect(screen, (0, 0, 0), (660, 0, 300, 480))
         self._quit_btn.draw(screen)
@@ -233,6 +254,12 @@ class Client(SocketClient):
                     
 
     def run(self):
+        """
+        Run main game loop
+        Each cycle:
+        1. check for user input and send messages to server for some
+        2. screen is cleared, and objects are drawn to it
+        """
         super(Client, self).run() # updates room
         screen = self._game_window.screen
         running = True
@@ -245,22 +272,23 @@ class Client(SocketClient):
                     if event.type == pygame.QUIT:
                         running = False
                     elif event.type == pygame.KEYDOWN:
+                        # keyboard event, input to server
                         k = to_char(event.key, \
                             shifted=bool(mods & pygame.KMOD_SHIFT))
                         if k:
                             self._send_input(k)
                     elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1:
+                        if event.button == 1: # left mouse click
                             room_btn = self._rooms_group.which_over()
                             if room_btn:
                                 self._rooms_group.on_click(room_btn)
                             for btn in self._btns:
                                 if btn.is_over(screen):
                                     btn.on_click()
-                        elif event.button == 4:
+                        elif event.button == 4: # scroll up
                             if self._rooms_group.is_over(screen):
                                 self._rooms_group.on_scroll_up()
-                        elif event.button == 5:
+                        elif event.button == 5: # scroll down
                             if self._rooms_group.is_over(screen):
                                 self._rooms_group.on_scroll_down()
 

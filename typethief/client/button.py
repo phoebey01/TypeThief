@@ -8,6 +8,9 @@ from .textutils import render_text
 
 
 class Button(object):
+    """
+    A rectangular button with basic hovering and action execution on clicking
+    """
     def __init__(
         self, 
         x, y, w, h,
@@ -81,6 +84,11 @@ class Button(object):
 
 
 class ButtonGroup(object):
+    """
+    A vertical group of buttons that can be removed and added at any time
+    If there are more buttons that the dimensions of the button group allow,
+        users can scroll within the button group to reach clipped buttons
+    """
     _SCROLL_SPEED = 5
 
     def __init__(self, x, y, w, h, on_color, off_color, font=None):

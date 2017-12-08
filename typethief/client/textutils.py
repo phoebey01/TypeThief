@@ -5,6 +5,9 @@ import os
 
 
 def render_text(x, y, text, font, color=(0, 0, 0), background=None):
+    """
+    Create pygame surfaces and rectangles for text
+    """
     surf = font.render(text, True, color, background)
     rect = surf.get_rect()
     rect.x = x
@@ -13,9 +16,11 @@ def render_text(x, y, text, font, color=(0, 0, 0), background=None):
 
 
 def rect_text(x, y, w, h, text, bg_color, screen):
+    """
+    Draw text on top of a rectangle on a given pygame screen
+    """
     dims = x, y, w, h
     pygame.draw.rect(screen, bg_color, dims)
-    #font = pygame.font.SysFont('arial', 18)
     path = os.path.join(os.getcwd(), 'ui/fonts/raleway.ttf')
     font = pygame.font.Font(path, 18)
     tw, th = font.size(text)
@@ -24,6 +29,14 @@ def rect_text(x, y, w, h, text, bg_color, screen):
 
 
 def wrap_text(text, font, width=None):
+    """
+    Wrap a text inside a given width
+
+    Params:
+    text [str]: string to wrap
+
+    Returns [list[str]]: lines of the text that have been wrapped
+    """
     lines = text.split('\n')
     if not width or width == 0:
         return lines
@@ -32,7 +45,7 @@ def wrap_text(text, font, width=None):
     for l in lines:
         wrapped = ''
         words = [w + ' ' for w in l.split(' ')]
-        words[-1].rstrip() # todo: deal with empty case
+        words[-1].rstrip()
 
         for w in words:
             if wrapped and font.size('{} {}'.format(wrapped, w))[0] <= width:
@@ -54,6 +67,9 @@ def wrap_text(text, font, width=None):
 
 
 def render_lines(x, y, lines, font, color=(0, 0, 0)):
+    """
+    Renders lines of code as a seris of pygame surfaces and rectangles
+    """
     surfrects = []
     for l in lines:
         surfrects.append(render_text(x, y, l, font, color))
@@ -114,6 +130,10 @@ _KEYS = {
 
 
 def to_char(n, shifted=False):
+    """
+    Convert pygame user input value to a characters
+    Some are chnaged depend on whether or not shift is down
+    """
     if n not in _KEYS:
         return None
     base, shift = _KEYS[n]
